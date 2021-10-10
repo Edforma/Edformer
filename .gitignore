@@ -1,0 +1,2 @@
+// node_modules does not need to be included in git commits.
+node_modules/

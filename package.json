@@ -1,0 +1,14 @@
+{
+  "name": "ssowrapper",
+  "version": "1.0.0",
+  "description": "A REST API for Conroe ISD's SSO system",
+  "main": "index.js",
+  "author": "Griffin Bauer",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.22.0",
+    "chromedriver": "^94.0.0",
+    "express": "^4.17.1",
+    "selenium-webdriver": "^4.0.0-rc-2"
+  }
+}

@@ -103,9 +103,6 @@ const destroySACSession = async (sessioncookieToDestroy, res) => {
       });
     console.log(logoutRequest);
     res.send();
-    
-    
-
 
 }
 

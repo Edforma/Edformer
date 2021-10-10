@@ -4,6 +4,12 @@ const assert = require('assert')
 
 const loginSSO = async (username, password, res) => {
 
+    // This function is used to log into the Student Access Center page.
+    // I *tried* to make it so I could just get it with an API call, but that wasn't working.
+    // I kept trying, my dad told me about Selenium. Did I ignore that advice? Yep.
+    // Look where we are now.
+
+
     // Include the chrome driver
     require("chromedriver");
 
@@ -13,7 +19,7 @@ const loginSSO = async (username, password, res) => {
     let driver = browser.forBrowser("chrome").build();
 
 
-    // Step 1 - Opening the sign in page
+    // Open the Login Page
     await driver.get("https://sso.conroeisd.net/_authn/Logon?ru=L3Nzby9wb3J0YWw=");
     
     await driver.manage().setTimeouts({implicit: 10000});

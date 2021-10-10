@@ -91,22 +91,18 @@ const loginSSO = async (username, password, res) => {
 
 }
 
-const destroySACSession = async (sessionid, res) => {
+const destroySACSession = async (sessioncookieToDestroy, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
     // This is just the complete opposite of what /login does: it logs out.
 
-    // Create a request configuration.
-    let reqConfig = {
+    // Create a logout request.
+    let logoutRequest = await axios.get('https://pac.conroeisd.net/logout.asp', {
         headers: {
-          sessionid: sessionid,
+          'cookie': sessioncookieToDestroy
         }
-      }
-
-    await axios.get('https://pac.conroeisd.net/logout.asp', null, reqConfig)
-        .catch(function (error) {
-            res.send(error); // Re[prt the error back to the user.
-        });
-        res.send();
+      });
+    console.log(logoutRequest);
+    res.send();
     
     
 

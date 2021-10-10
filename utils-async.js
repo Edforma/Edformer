@@ -74,7 +74,15 @@ const loginSSO = async (username, password, res) => {
     
     // Send back the cookie to the device for further usage!
     await driver.manage().getCookies().then(function (cookies) {
-        res.send(cookies)
+        // At this point, we should have two cookies: ASPSESSIONID********** (random letters), and SSOEA.
+        // We only care about the first one. For some reason, this is the ONLY cookie you need to access SAC.
+        // To make things worse, it's not set to httpOnly! Come on, Terry McClaugherty!
+        // Anyways, SSOEA is just a token used for other SSO stuff we don't care about.
+        // ASPSESSIONID should be the first cookie grabbed by getCookies(), so because i'm too lazy to filter
+        // JSON at 10:09 PM, i'm just gonna steal the first cookie in the array. 
+
+        let sacCookie = cookies[0] // Who needs to filter anyways
+        res.send({ status: "success", cookieData: { name: sacCookie.name, token: sacCookie.value}})
     })
 
 }

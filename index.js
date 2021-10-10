@@ -8,10 +8,10 @@ app.post('/login', (req, res) => {
 
     // Check to make sure a username and password is present. If either one is missing, return with an error.
     if (!req.headers.username) {
-        res.send('Username missing.')
+        res.send({ status: "failed", error: "Username missing."})
         return;
     } else if (!req.headers.password) {
-        res.send('Password missing.')
+        res.send({ status: "failed", error: "Password missing."})
         return;
     }
 

@@ -7,21 +7,21 @@ const loginSSO = async (username, password, res) => {
     // Include the chrome driver
     require("chromedriver");
 
-    // Include selenium webdriver
+    // Include selenium webdriver + other stuff
     let swd = require("selenium-webdriver");
     let browser = new swd.Builder();
     let driver = browser.forBrowser("chrome").build();
 
 
     // Step 1 - Opening the sign in page
-    let tabToOpen = await driver.get("https://sso.conroeisd.net/_authn/Logon?ru=L3Nzby9wb3J0YWw=");
+    await driver.get("https://sso.conroeisd.net/_authn/Logon?ru=L3Nzby9wb3J0YWw=");
     
-    let findTimeOutP = await driver.manage().setTimeouts({implicit: 10000});
+    await driver.manage().setTimeouts({implicit: 10000});
 
-    //Store the ID of the original window
+    // Store the ID of the original window
     const originalWindow = await driver.getWindowHandle();
 
-    //Check we don't have other windows open already
+    // Check we don't have other windows open already
     assert((await driver.getAllWindowHandles()).length === 1);
 
     let usernameBox = await driver.findElement(swd.By.css("#Username"));
@@ -63,8 +63,10 @@ const loginSSO = async (username, password, res) => {
         }
     });
 
+    // Wait for Student Access Center to fully render, and to give us our cookie
     await driver.wait(until.titleContains('Student Information System'), 10000);
     
+    // Send back the cookie to the device for further usage!
     await driver.manage().getCookies().then(function (cookies) {
         res.send(cookies)
     })

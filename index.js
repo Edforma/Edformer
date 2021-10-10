@@ -3,7 +3,7 @@ const utils = require('./utils-async')
 const app = express()
 const port = 3000 // Set port
 
-app.post('/login', (req, res) => {
+app.post('/session/login', (req, res) => {
 
     // Check to make sure a username and password is present. If either one is missing, return with an error.
     if (!req.headers.username) {
@@ -18,7 +18,7 @@ app.post('/login', (req, res) => {
 
 })
 
-app.post('/destroySession', (req, res) => {
+app.post('/session/destroySession', (req, res) => {
 
     // Check for a session ID. If we don't have one, stop.
     if (!req.headers.sessionid) {

@@ -1,6 +1,7 @@
 const { Driver } = require("selenium-webdriver/chrome");
 const until = require("selenium-webdriver/lib/until");
-const assert = require('assert')
+const assert = require('assert');
+const axios = require('axios') // Sending requests
 
 const loginSSO = async (username, password, res) => {
 
@@ -81,10 +82,36 @@ const loginSSO = async (username, password, res) => {
         // ASPSESSIONID should be the first cookie grabbed by getCookies(), so because i'm too lazy to filter
         // JSON at 10:09 PM, i'm just gonna steal the first cookie in the array. 
 
-        let sacCookie = cookies[0] // Who needs to filter anyways
-        res.send({ status: "success", cookieData: { name: sacCookie.name, token: sacCookie.value}})
+        let sacCookie = cookies[0]; // Who needs to filter anyways
+        res.send({ status: "success", cookieData: { name: sacCookie.name, token: sacCookie.value}});
     })
+
+    // Finish up by closing the tab, it has done it's job!
+    await driver.quit();
+
+}
+
+const destroySACSession = async (sessionid, res) => {
+    // The purpose of this function is to end a session, once it's fufilled it's purpose.
+    // This is just the complete opposite of what /login does: it logs out.
+
+    // Create a request configuration.
+    let reqConfig = {
+        headers: {
+          sessionid: sessionid,
+        }
+      }
+
+    await axios.get('https://pac.conroeisd.net/logout.asp', null, reqConfig)
+        .catch(function (error) {
+            res.send(error); // Re[prt the error back to the user.
+        });
+        res.send();
+    
+    
+
 
 }
 
 exports.loginSSO = loginSSO;
+exports.destroySACSession = destroySACSession;

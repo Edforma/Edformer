@@ -2,6 +2,7 @@ const { Driver } = require("selenium-webdriver/chrome");
 const until = require("selenium-webdriver/lib/until");
 const assert = require('assert');
 const axios = require('axios') // Sending requests
+const cheerio = require('cheerio');
 
 const loginSSO = async (username, password, res) => {
 
@@ -91,6 +92,48 @@ const loginSSO = async (username, password, res) => {
 
 }
 
+const getStudentData = async (sessionid, res) => {
+    
+    // This function will use a given session ID to contact the SAC page, and to
+    // get some basic user data. Triggered by /user/getDetails.
+
+    let studentInfoPage = await axios.get('https://pac.conroeisd.net/student.asp', {
+        headers: {
+            'cookie': sessionid
+        }
+    });
+
+    const $ = cheerio.load(studentInfoPage.data);
+
+    // Assemble our response form, by grabbing all of the data.
+    const responseData = {
+        status: "success",
+        registration: {
+            name: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(2) > td:nth-child(2)").text(),
+            grade: parseInt($("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(2) > td:nth-child(4)").text()),
+            counselor: {
+                name: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(2)").contents().text().trim(),
+                email: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(2) > a").attr('title')
+            },
+            homeroom: {
+                name: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(6)").contents().text().trim(),
+                email: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(6) > a").attr('title')
+            }
+        },
+        attendance: {
+            totalAbsences: parseInt($("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(6) > td:nth-child(2)").text()),
+            totalTardies: parseInt($("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(6) > td:nth-child(4)").text())
+        },
+        transportation: {
+            busToCampus: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(2)").text(),
+            busToCampusStopTime: `${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(4)").text()} ${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(6)").text()}`,
+            busFromCampus: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(2)").text(),
+            busFromCampusStopTime: `${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(4)").text()} ${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(6)").text()}`
+        }
+    }
+
+    res.send(responseData);
+}
 const destroySACSession = async (sessioncookieToDestroy, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
     // This is just the complete opposite of what /login does: it logs out.
@@ -107,4 +150,5 @@ const destroySACSession = async (sessioncookieToDestroy, res) => {
 }
 
 exports.loginSSO = loginSSO;
+exports.getStudentData = getStudentData;
 exports.destroySACSession = destroySACSession;

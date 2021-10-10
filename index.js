@@ -18,15 +18,21 @@ app.post('/session/login', (req, res) => {
 
 })
 
+app.get('/user/getDetails', (req, res) => {
+    
+    if (!req.headers.sessionid) {
+        res.status(400).send({ status: "failed", error: "SessionID missing."});
+        return;
+    } else utils.getStudentData(req.headers.sessionid, res);
+})
+
 app.post('/session/destroySession', (req, res) => {
 
     // Check for a session ID. If we don't have one, stop.
     if (!req.headers.sessionid) {
-        res.status(400).send({ status: "failed", error: "No session id name given to destroy."});
+        res.status(400).send({ status: "failed", error: "No SessionID cookie given to destroy."});
         return;
-    }
-
-    utils.destroySACSession(req.headers.sessionid, res);
+    } else utils.destroySACSession(req.headers.sessionid, res);
 
 })
 

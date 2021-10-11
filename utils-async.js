@@ -129,6 +129,12 @@ const getStudentData = async (sessionid, res) => {
             busToCampusStopTime: `${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(4)").text()} ${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(6)").text()}`,
             busFromCampus: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(2)").text(),
             busFromCampusStopTime: `${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(4)").text()} ${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(6)").text()}`
+        },
+        misc: {
+            lunchFunds: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(14) > td:nth-child(2)").text(),
+            studentUsername: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(16) > td:nth-child(2)").text(),
+            studentID: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(15) > td:nth-child(2)").text(),
+            lastSessionTimestamp: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(21) > td:nth-child(2)").text()
         }
     }
 

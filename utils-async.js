@@ -109,32 +109,32 @@ const getStudentData = async (sessionid, res) => {
     const responseData = {
         status: "success",
         registration: {
-            name: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(2) > td:nth-child(2)").text(),
-            grade: parseInt($("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(2) > td:nth-child(4)").text()),
+            name: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(2) > td:nth-child(2)").text(),
+            grade: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(2) > td:nth-child(4)").text()),
             counselor: {
-                name: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(2)").contents().text().trim(),
-                email: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(2) > a").attr('title')
+                name: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(2)").contents().text().trim(),
+                email: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(2) > a").attr('title')
             },
             homeroom: {
-                name: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(6)").contents().text().trim(),
-                email: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(6) > a").attr('title')
+                name: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(6)").contents().text().trim(),
+                email: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(6) > a").attr('title')
             }
         },
         attendance: {
-            totalAbsences: parseInt($("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(6) > td:nth-child(2)").text()),
-            totalTardies: parseInt($("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(6) > td:nth-child(4)").text())
+            totalAbsences: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(6) > td:nth-child(2)").text()),
+            totalTardies: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(6) > td:nth-child(4)").text())
         },
         transportation: {
-            busToCampus: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(2)").text(),
-            busToCampusStopTime: `${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(4)").text()} ${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(6)").text()}`,
-            busFromCampus: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(2)").text(),
-            busFromCampusStopTime: `${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(4)").text()} ${$("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(6)").text()}`
+            busToCampus: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(2)").text(),
+            busToCampusStopTime: `${$("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(4)").text()} ${$("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(6)").text()}`,
+            busFromCampus: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(2)").text(),
+            busFromCampusStopTime: `${$("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(4)").text()} ${$("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(6)").text()}`
         },
         misc: {
-            lunchFunds: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(14) > td:nth-child(2)").text(),
-            studentUsername: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(16) > td:nth-child(2)").text(),
-            studentID: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(15) > td:nth-child(2)").text(),
-            lastSessionTimestamp: $("body > center:nth-child(7) > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(21) > td:nth-child(2)").text()
+            lunchFunds: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(14) > td:nth-child(2)").text(),
+            studentUsername: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(16) > td:nth-child(2)").text(),
+            studentID: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(15) > td:nth-child(2)").text(),
+            lastSessionTimestamp: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(21) > td:nth-child(2)").text()
         }
     }
 

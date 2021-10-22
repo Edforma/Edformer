@@ -3,6 +3,7 @@ const until = require("selenium-webdriver/lib/until");
 const assert = require('assert');
 const axios = require('axios') // Sending requests
 const cheerio = require('cheerio');
+const xpath = require('xpath-html');
 
 const loginSSO = async (username, password, res) => {
 
@@ -103,6 +104,14 @@ const getStudentData = async (sessionid, res) => {
         }
     });
 
+    if (studentInfoPage.data.indexOf("Session has ended") >= 0) {
+        res.send({
+            status: "error",
+            error: "Invalid/ended session"
+        });
+        return;
+    }
+
     const $ = cheerio.load(studentInfoPage.data);
 
     // Assemble our response form, by grabbing all of the data.
@@ -140,6 +149,98 @@ const getStudentData = async (sessionid, res) => {
 
     res.send(responseData);
 }
+
+
+const getGrades = async (sessionid, res) => {
+    let page = await axios.get('https://pac.conroeisd.net/assignments.asp', {
+        headers: {
+            'cookie': sessionid
+        }
+    });
+
+    if (page.data.indexOf("Session has ended") >= 0) {
+        res.send({
+            status: "error",
+            error: "Invalid/ended session"
+        });
+        return;
+    }
+
+    const classAssignments = xpath
+        .fromPageSource(page.data)
+        .findElements("//center/table/tbody/tr/td/font/strong")
+        .map(classAssignmentTableTitleNode => {
+            var tableNodeXPath = xpath.fromNode(
+                classAssignmentTableTitleNode.parentNode.parentNode.parentNode.parentNode.parentNode
+            );
+
+            var course = classAssignmentTableTitleNode.textContent.trim().split("•")[1].trim();
+
+            var assignments = tableNodeXPath
+                .findElements('//tr[@bgcolor]')
+                .map(trNode => {
+                    return {
+                        dueDate: trNode.childNodes[0].textContent.trim(),
+                        assignedDate: trNode.childNodes[1].textContent.trim(),
+                        title: trNode.childNodes[2].textContent.trim(),
+                    }
+                })
+
+            return { course, assignments }
+        })
+        .reduce((acc, assignments) => {
+            return {...acc, [assignments.course]: assignments}
+        }, {});
+
+    const classAverages = xpath
+        .fromNode(
+            xpath.fromPageSource(page.data).findElement("//font[contains(text(), 'Class Averages')]")
+                .parentNode.parentNode.parentNode.parentNode.parentNode
+        )
+        .findElements('//tr[@bgcolor]')
+        .map(trNode => {
+            var course = trNode.childNodes[2].textContent.trim();
+
+            return {
+                period: trNode.childNodes[0].textContent.trim(),
+                subject: trNode.childNodes[1].textContent.trim(),
+                course: course,
+                teacher: trNode.childNodes[3].textContent.trim(),
+                teacherEmail: trNode.childNodes[4].childNodes[0].getAttribute("href").split("mailto:")[1],
+                average: parseFloat(trNode.childNodes[5].textContent.trim()),
+                assignments: classAssignments[course].assignments
+            }
+        });
+
+    // const classAssignments = classAverages
+    //     .map(classAvg => {
+    //         return xpath
+    //             .fromNode(
+    //                 xpath.fromPageSource(page.data).findElement("//table/*/strong[contains(text(), '" + classAvg.course + "')]")
+    //                     .parentNode.parentNode.parentNode.parentNode.parentNode
+    //             )
+    //             .map(trNode => {
+    //                 return {
+    //                     dueDate: trNode.childNodes[0].textContent.trim(),
+    //                     assignedDate: trNode.childNodes[1].textContent.trim(),
+    //                     title: trNode.childNodes[2].textContent.trim(),
+    //                 }
+    //             });
+    //     })
+    
+
+
+
+    // Assemble our response form, by grabbing all of the data.
+    const responseData = {
+        status: "success",
+        classAverages
+    }
+
+    res.send(responseData);
+}
+
+
 const destroySACSession = async (sessioncookieToDestroy, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
     // This is just the complete opposite of what /login does: it logs out.
@@ -157,4 +258,5 @@ const destroySACSession = async (sessioncookieToDestroy, res) => {
 
 exports.loginSSO = loginSSO;
 exports.getStudentData = getStudentData;
+exports.getGrades = getGrades;
 exports.destroySACSession = destroySACSession;

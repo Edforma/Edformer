@@ -35,6 +35,17 @@ app.get('/user/getDetails', (req, res) => {
     } else utils.getStudentData(req.headers.sessionid, res);
 })
 
+app.get('/user/getGrades', (req, res) => {
+
+    if (!req.headers.sessionid) {
+        res.status(400).send({
+            status: "failed",
+            error: "SessionID missing."
+        });
+        return;
+    } else utils.getGrades(req.headers.sessionid, res);
+})
+
 app.post('/session/destroySession', (req, res) => {
 
     // Check for a session ID. If we don't have one, stop.

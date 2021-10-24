@@ -182,7 +182,8 @@ const getGrades = async (sessionid, res) => {
                     return {
                         dueDate: trNode.childNodes[0].textContent.trim(),
                         assignedDate: trNode.childNodes[1].textContent.trim(),
-                        title: trNode.childNodes[2].textContent.trim(),
+                        category: trNode.childNodes[3].textContent.trim(),
+                        score: trNode.childNodes[4].textContent.trim()
                     }
                 })
 

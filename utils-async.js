@@ -46,7 +46,7 @@ const loginSSO = async (username, password, res) => {
     // Step 5 - Entering the password
     await passwordBox.sendKeys(password);
 
-    console.log("Password entered successfully in");
+    console.log("Password entered successfully");
 
     // Step 6 - Finding the Sign In button
     let signInBtn = await driver.findElement(swd.By.css("#login-button"));
@@ -105,7 +105,7 @@ const getStudentData = async (sessionid, res) => {
     });
 
     if (studentInfoPage.data.indexOf("Session has ended") >= 0) {
-        res.send({
+        res.status(400).send({
             status: "error",
             error: "Invalid/ended session"
         });
@@ -118,32 +118,33 @@ const getStudentData = async (sessionid, res) => {
     const responseData = {
         status: "success",
         registration: {
-            name: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(2) > td:nth-child(2)").text(),
-            grade: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(2) > td:nth-child(4)").text()),
+            name: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(2) > td:nth-child(2)").text(),
+            grade: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(2) > td:nth-child(4)").text()),
+            studentPicture: 'https://pac.conroeisd.net/' + $("body > table > tbody > tr > td:nth-child(1) > img").attr('src'),
             counselor: {
-                name: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(2)").contents().text().trim(),
-                email: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(2) > a").attr('title')
+                name: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(3) > td:nth-child(2)").contents().text().trim(),
+                email: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(3) > td:nth-child(2) > a").attr('title')
             },
             homeroom: {
-                name: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(6)").contents().text().trim(),
-                email: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(3) > td:nth-child(6) > a").attr('title')
+                name: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(3) > td:nth-child(6)").contents().text().trim(),
+                email: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(3) > td:nth-child(6) > a").attr('title')
             }
         },
         attendance: {
-            totalAbsences: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(6) > td:nth-child(2)").text()),
-            totalTardies: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(6) > td:nth-child(4)").text())
+            totalAbsences: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(6) > td:nth-child(2)").text()),
+            totalTardies: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(6) > td:nth-child(4)").text())
         },
         transportation: {
-            busToCampus: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(2)").text(),
-            busToCampusStopTime: `${$("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(4)").text()} ${$("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(9) > td:nth-child(6)").text()}`,
-            busFromCampus: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(2)").text(),
-            busFromCampusStopTime: `${$("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(4)").text()} ${$("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(10) > td:nth-child(6)").text()}`
+            busToCampus: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(9) > td:nth-child(2)").text(),
+            busToCampusStopTime: `${$("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(9) > td:nth-child(4)").text()} ${$("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(9) > td:nth-child(6)").text()}`,
+            busFromCampus: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(10) > td:nth-child(2)").text(),
+            busFromCampusStopTime: `${$("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(10) > td:nth-child(4)").text()} ${$("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(10) > td:nth-child(6)").text()}`
         },
         misc: {
-            lunchFunds: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(14) > td:nth-child(2)").text(),
-            studentUsername: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(16) > td:nth-child(2)").text(),
-            studentID: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(15) > td:nth-child(2)").text(),
-            lastSessionTimestamp: $("body > center > table > tbody > tr > td:nth-child(2) > table:nth-child(3) > tbody > tr:nth-child(21) > td:nth-child(2)").text()
+            lunchFunds: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(14) > td:nth-child(2)").text(),
+            studentUsername: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(16) > td:nth-child(2)").text(),
+            studentID: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(15) > td:nth-child(2)").text(),
+//            lastSessionTimestamp: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(21) > td:nth-child(2)").text() Currently breaks on failing grades
         }
     }
 
@@ -158,8 +159,9 @@ const getGrades = async (sessionid, res) => {
         }
     });
 
+    // Detect an ended/invalid session
     if (page.data.indexOf("Session has ended") >= 0) {
-        res.send({
+        res.status(400).send({
             status: "error",
             error: "Invalid/ended session"
         });
@@ -167,8 +169,8 @@ const getGrades = async (sessionid, res) => {
     }
 
     const classAssignments = xpath
-        .fromPageSource(page.data)
-        .findElements("//center/table/tbody/tr/td/font/strong")
+        .fromPageSource(page.data) // Select current page as source
+        .findElements("//center/table/tbody/tr/td/font/strong") // Find assignments table
         .map(classAssignmentTableTitleNode => {
             var tableNodeXPath = xpath.fromNode(
                 classAssignmentTableTitleNode.parentNode.parentNode.parentNode.parentNode.parentNode
@@ -185,7 +187,7 @@ const getGrades = async (sessionid, res) => {
                         category: trNode.childNodes[3].textContent.trim(),
                         score: trNode.childNodes[4].textContent.trim()
                     }
-                })
+                });
 
             return { course, assignments }
         })

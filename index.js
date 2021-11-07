@@ -26,36 +26,36 @@ app.post('/session/login', (req, res) => {
 
 app.get('/user/getDetails', (req, res) => {
 
-    if (!req.headers.sessionid) {
+    if (!req.headers.accesstoken) {
         res.status(400).send({
             status: "failed",
-            error: "SessionID missing."
+            error: "accessToken missing."
         });
         return;
-    } else utils.getStudentData(req.headers.sessionid, res);
+    } else utils.getStudentData(req.headers.accesstoken, res);
 })
 
 app.get('/user/getGrades', (req, res) => {
 
-    if (!req.headers.sessionid) {
+    if (!req.headers.accesstoken) {
         res.status(400).send({
             status: "failed",
-            error: "SessionID missing."
+            error: "accessToken missing."
         });
         return;
-    } else utils.getGrades(req.headers.sessionid, res);
+    } else utils.getGrades(req.headers.accesstoken, res);
 })
 
 app.post('/session/destroySession', (req, res) => {
 
     // Check for a session ID. If we don't have one, stop.
-    if (!req.headers.sessionid) {
+    if (!req.headers.accesstoken) {
         res.status(400).send({
             status: "failed",
-            error: "No SessionID cookie given to destroy."
+            error: "No accessToken cookie given to destroy."
         });
         return;
-    } else utils.destroySACSession(req.headers.sessionid, res);
+    } else utils.destroySACSession(req.headers.accesstoken, res);
 
 })
 

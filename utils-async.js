@@ -198,13 +198,17 @@ const getGrades = async (accessToken, res) => {
 
             var assignments = tableNodeXPath
                 .findElements('//tr[@bgcolor]')
-                .map(trNode => {
-                    return {
-                        dueDate: trNode.childNodes[0].textContent.trim(),
-                        assignedDate: trNode.childNodes[1].textContent.trim(),
-                        category: trNode.childNodes[3].textContent.trim(),
-                        score: trNode.childNodes[4].textContent.trim()
-                    }
+                .flatMap(trNode => {
+                    return trNode.childNodes.length == 10 
+                        ? [{
+                            dueDate: trNode.childNodes[0].textContent.trim(),
+                            assignedDate: trNode.childNodes[1].textContent.trim(),
+                            assignmentName: trNode.childNodes[2].textContent.trim(),
+                            category: trNode.childNodes[3].textContent.trim(),
+                            score: parseFloat(trNode.childNodes[4].textContent.trim()),
+                            totalPoints: parseInt(trNode.childNodes[7].textContent.trim())
+                        }]
+                        : []
                 });
 
             return { course, assignments }

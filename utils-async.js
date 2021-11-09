@@ -9,6 +9,16 @@ const { access } = require("fs");
 const PouchDB = require('pouchdb')
 const db = new PouchDB('data')
 
+db.allDocs({
+    include_docs: true,
+    attachments: true
+  }).then(function (result) {
+    console.log('Database contains:', result);
+  }).catch(function (err) {
+    console.log(err);
+});
+
+
 const loginSSO = async (username, password, res) => {
 
     // This function is used to log into the Student Access Center page.

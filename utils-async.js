@@ -52,15 +52,11 @@ const loginSSO = async (username, password, res) => {
     // Step 3 - Entering the username
     await usernameBox.sendKeys(username);
 
-    console.log("Username entered successfully");
-
     // Step 4 - Finding the password input
     let passwordBox = await driver.findElement(swd.By.css("#Password"));
 
     // Step 5 - Entering the password
     await passwordBox.sendKeys(password);
-
-    console.log("Password entered successfully");
 
     // Step 6 - Finding the Sign In button
     let signInBtn = await driver.findElement(swd.By.css("#login-button"));

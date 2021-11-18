@@ -2,6 +2,27 @@ const express = require('express') // Recieving requests
 const utils = require('./utils-async')
 const app = express()
 const port = 3000 // Set port
+const Sentry = require('@sentry/node');
+const Tracing = require("@sentry/tracing");
+
+Sentry.init({
+    dsn: "https://5289a117dcb6445d98f31a916c14c4fa@o1069103.ingest.sentry.io/6065463",
+    integrations: [
+      // enable HTTP calls tracing
+      new Sentry.Integrations.Http({ tracing: true }),
+      // enable Express.js middleware tracing
+      new Tracing.Integrations.Express({ app }),
+    ],
+  
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+});
+
+
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
 
 app.post('/session/login', (req, res) => {
 
@@ -58,6 +79,17 @@ app.post('/session/destroySession', (req, res) => {
     } else utils.destroySACSession(req.headers.accesstoken, res);
 
 })
+
+app.use(Sentry.Handlers.errorHandler());
+
+app.use(function onError(err, req, res, next) {
+    // The error id is attached to `res.sentry` to be returned
+    // and optionally displayed to the user for support.
+    res.statusCode = 500;
+    res.end(res.sentry + "\n");
+  });
+  
+
 
 app.listen(port, () => {
     console.log(`listening at http://localhost:${port}`)

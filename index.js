@@ -80,6 +80,12 @@ app.post('/session/destroySession', (req, res) => {
 
 })
 
+app.post('/server/ping', (req, res) => {
+    res.send({
+        status: 'success'
+    });
+})
+
 app.use(Sentry.Handlers.errorHandler());
 
 app.use(function onError(err, req, res, next) {
@@ -87,7 +93,7 @@ app.use(function onError(err, req, res, next) {
     // and optionally displayed to the user for support.
     res.statusCode = 500;
     res.end(res.sentry + "\n");
-  });
+});
   
 
 

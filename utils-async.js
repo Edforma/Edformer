@@ -18,7 +18,13 @@ db.allDocs({
     console.log(err);
 });
 
+// Utility stuff for other functions
+const authCookie = async function(accessToken) {
+    let authDoc = await db.get("session-" + accessToken)
+    return authDoc.cookieData.name + '=' + authDoc.cookieData.token
+}
 
+// Functions called directly by api
 const loginSSO = async (username, password, res) => {
 
     // This function is used to log into the Student Access Center page.
@@ -112,7 +118,6 @@ const loginSSO = async (username, password, res) => {
     await driver.quit();
 
 }
-
 const getStudentData = async (accessToken, res) => {
     
     // This function will use a given session ID to contact the SAC page, and to
@@ -170,12 +175,6 @@ const getStudentData = async (accessToken, res) => {
 
     res.send(responseData);
 }
-
-const authCookie = async function(accessToken) {
-    let authDoc = await db.get("session-" + accessToken)
-    return authDoc.cookieData.name + '=' + authDoc.cookieData.token
-}
-
 const getGrades = async (accessToken, res) => {
     let page = await axios.get('https://pac.conroeisd.net/assignments.asp', {
         headers: {
@@ -270,8 +269,6 @@ const getGrades = async (accessToken, res) => {
 
     res.send(responseData);
 }
-
-
 const destroySACSession = async (accessToken, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
     // This is just the complete opposite of what /login does: it logs out.
@@ -283,7 +280,9 @@ const destroySACSession = async (accessToken, res) => {
         }
       });
     console.log(logoutRequest);
-    res.send();
+    res.send({
+        status: 'success'
+    });
 
 }
 

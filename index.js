@@ -4,7 +4,6 @@ const app = express()
 const port = 3000 // Set port
 const Sentry = require('@sentry/node');
 const Tracing = require("@sentry/tracing");
-const pino = require('pino-http')()
 
 Sentry.init({
     dsn: "https://5289a117dcb6445d98f31a916c14c4fa@o1069103.ingest.sentry.io/6065463",
@@ -24,7 +23,6 @@ Sentry.init({
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
-app.use(pino)
 
 app.post('/session/login', (req, res) => {
 
@@ -42,8 +40,6 @@ app.post('/session/login', (req, res) => {
         });
         return;
     }
-
-    req.log.info(`Login beginning for user ${req.headers.username}`)
     utils.loginSSO(req.headers.username, req.headers.password, res);
 
 })

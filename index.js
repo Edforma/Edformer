@@ -4,6 +4,7 @@ const app = express()
 const port = 3000 // Set port
 const Sentry = require('@sentry/node');
 const Tracing = require("@sentry/tracing");
+const pino = require('pino-http')()
 
 Sentry.init({
     dsn: "https://5289a117dcb6445d98f31a916c14c4fa@o1069103.ingest.sentry.io/6065463",
@@ -23,6 +24,7 @@ Sentry.init({
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
+app.use(pino)
 
 app.post('/session/login', (req, res) => {
 
@@ -41,6 +43,7 @@ app.post('/session/login', (req, res) => {
         return;
     }
 
+    req.log.info(`Login beginning for user ${req.headers.username}`)
     utils.loginSSO(req.headers.username, req.headers.password, res);
 
 })
@@ -80,9 +83,12 @@ app.post('/session/destroySession', (req, res) => {
 
 })
 
-app.post('/server/ping', (req, res) => {
+app.get('/server/ping', (req, res) => {
     res.send({
-        status: 'success'
+        status: 'success',
+        server: {
+            version: null
+        }
     });
 })
 
@@ -94,8 +100,6 @@ app.use(function onError(err, req, res, next) {
     res.statusCode = 500;
     res.end(res.sentry + "\n");
 });
-  
-
 
 app.listen(port, () => {
     console.log(`listening at http://localhost:${port}`)

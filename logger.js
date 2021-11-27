@@ -1,7 +1,7 @@
 const winston = require('winston');
 
 
-winston.add(new winston.transports.File({ filename: `./logs/log-${new Date().getTime()}.log` })) // Log to a file
+winston.add(new winston.transports.File({ filename: `./logs/${new Date().toISOString()}.log` })) // Log to a file
 
 // If we are not in production, log to console with a readable format.
 if (process.env.NODE_ENV !== 'production') {

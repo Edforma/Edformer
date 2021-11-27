@@ -24,16 +24,15 @@ const loginSSO = async (username, password, res) => {
     // I kept trying, my dad told me about Selenium. Did I ignore that advice? Yep.
     // Look where we are now.
 
-
+    logger.info(`Beginning login for user ${username}`)
     // Include the chrome driver
     require("chromedriver");
 
     // Include selenium webdriver + other stuff
     let swd = require("selenium-webdriver");
     let browser = new swd.Builder();
-    let driver = browser.forBrowser("chrome").build();
-
-
+    let driver = browser.forBrowser("chrome").build()
+    
     // Open the Login Page
     await driver.get("https://sso.conroeisd.net/_authn/Logon?ru=L3Nzby9wb3J0YWw=");
     
@@ -49,12 +48,14 @@ const loginSSO = async (username, password, res) => {
 
     // Step 3 - Entering the username
     await usernameBox.sendKeys(username);
+    logger.info(`${username} - Entered username`)
 
     // Step 4 - Finding the password input
     let passwordBox = await driver.findElement(swd.By.css("#Password"));
 
     // Step 5 - Entering the password
     await passwordBox.sendKeys(password);
+    logger.info(`${username} - Entered password`)
 
     // Step 6 - Finding the Sign In button
     let signInBtn = await driver.findElement(swd.By.css("#login-button"));
@@ -62,7 +63,11 @@ const loginSSO = async (username, password, res) => {
     // Step 7 - Clicking the Sign In button
     await signInBtn.click();
 
-    let sacButton = await driver.findElement(swd.By.id("Student Access Center"));
+    logger.info(`${username} - Sign in req sent. Waiting for page...`)
+    let sacButton = await driver.findElement(swd.By.id("Student Access Center"))
+    .catch((e) => {
+        return logger.error(`${username} - Failed to find SAC button; did the login fail?`);
+    })
 
     await sacButton.click();
 
@@ -82,6 +87,7 @@ const loginSSO = async (username, password, res) => {
 
     // Wait for Student Access Center to fully render, and to give us our cookie
     await driver.wait(until.titleContains('Student Information System'), 10000);
+    logger.info(`${username} - SAC login finished. Creating session.`)
     
     // Send back the cookie to the device for further usage!
     await driver.manage().getCookies().then(function (cookies) {
@@ -92,7 +98,7 @@ const loginSSO = async (username, password, res) => {
         // ASPSESSIONID should be the first cookie grabbed by getCookies(), so because i'm too lazy to filter
         // JSON at 10:09 PM, i'm just gonna steal the first cookie in the array. 
 
-        let sacCookie = cookies[0]; // Who needs to filter anyways
+        let sacCookie = cookies[0];
 
         let accessToken = randomUUID();
 
@@ -101,8 +107,13 @@ const loginSSO = async (username, password, res) => {
             cookieData: { name: sacCookie.name, token: sacCookie.value}
         }
         db.put(sessionDoc)
-        // sessionTokens[accessToken] = { cookieData: { name: sacCookie.name, token: sacCookie.value} }
+        .catch((e) => {
+            return logger.error(`${username} - Failed to put session doc. ${e}`)
+        })
 
+        logger.info(`${username} - Created session UUID: ${sessionDoc._id}`)
+
+        logger.info(`${username} - Responded with session!`)
         res.send({ status: "success", accessToken: accessToken});
     })
 

@@ -4,7 +4,8 @@ const app = express()
 const port = 3000 // Set port
 const Sentry = require('@sentry/node');
 const Tracing = require("@sentry/tracing");
-
+const logger = require('./logger') // Set up default logger
+const winston = require('winston')
 Sentry.init({
     dsn: "https://5289a117dcb6445d98f31a916c14c4fa@o1069103.ingest.sentry.io/6065463",
     integrations: [
@@ -98,5 +99,5 @@ app.use(function onError(err, req, res, next) {
 });
 
 app.listen(port, () => {
-    console.log(`listening at http://localhost:${port}`)
+    winston.info(`SSOWrapper now listening on port ${port}`)
 })

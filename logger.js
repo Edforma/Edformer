@@ -8,6 +8,7 @@ if (process.env.NODE_ENV !== 'production') {
   winston.add(new winston.transports.Console({
     format: winston.format.cli(),
   }));
+  winston.info(`Running in non-production env "${process.env.NODE_ENV}". Console output enabled.`)
 }
 
 winston.info('Logger initialized.');

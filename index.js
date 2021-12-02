@@ -1,11 +1,15 @@
-const express = require('express') // Recieving requests
-const utils = require('./utils-async')
-const app = express()
-const port = 3000 // Set port
-const Sentry = require('@sentry/node');
-const Tracing = require("@sentry/tracing");
+const express = require('express') // expressJS
+const app = express() // Initialize express app
+
+const utils = require('./utils-async') // Utilitys/API functions
+const config = require('./config.json') // Load configuration data
 const logger = require('./logger') // Set up default logger
 const winston = require('winston')
+
+const Sentry = require('@sentry/node');
+const Tracing = require("@sentry/tracing");
+
+// Initialize sentry
 Sentry.init({
     dsn: "https://5289a117dcb6445d98f31a916c14c4fa@o1069103.ingest.sentry.io/6065463",
     integrations: [
@@ -21,10 +25,11 @@ Sentry.init({
     tracesSampleRate: 1.0,
 });
 
-
+// Add sentry middleware
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
+// API endpoints
 app.post('/session/login', (req, res) => {
 
     // Check to make sure a username and password is present. If either one is missing, return with an error.
@@ -89,8 +94,10 @@ app.get('/server/ping', (req, res) => {
     });
 })
 
+// Add error handling middleware
 app.use(Sentry.Handlers.errorHandler());
 
+// onError middleware
 app.use(function onError(err, req, res, next) {
     // The error id is attached to `res.sentry` to be returned
     // and optionally displayed to the user for support.
@@ -98,6 +105,7 @@ app.use(function onError(err, req, res, next) {
     res.end(res.sentry + "\n");
 });
 
-app.listen(port, () => {
-    winston.info(`SSOWrapper now listening on port ${port}`)
+// Listen on whatever port is selected
+app.listen(config.port, () => {
+    winston.info(`SSOWrapper now listening on port ${config.port}`)
 })

@@ -72,6 +72,17 @@ app.get('/user/getGrades', (req, res) => {
     } else utils.getGrades(req.headers.accesstoken, res);
 })
 
+app.get('/user/getSchedule', (req, res) => {
+
+    if (!req.headers.accesstoken) {
+        res.status(400).send({
+            status: "failed",
+            error: "accessToken missing."
+        });
+        return;
+    } else utils.getSchedule(req.headers.accesstoken, res);
+})
+
 app.post('/session/destroySession', (req, res) => {
 
     // Check for a session ID. If we don't have one, stop.

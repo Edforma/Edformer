@@ -5,7 +5,6 @@ const axios = require('axios') // Sending requests
 const cheerio = require('cheerio');
 const xpath = require('xpath-html');
 const { randomUUID } = require("crypto");
-const { access } = require("fs");
 const PouchDB = require('pouchdb')
 const db = new PouchDB('data')
 const logger = require('winston')
@@ -18,7 +17,6 @@ const authCookie = async function(accessToken) {
 
 // Functions called directly by api
 const loginSSO = async (username, password, res) => {
-
     // This function is used to log into the Student Access Center page.
     // I *tried* to make it so I could just get it with an API call, but that wasn't working.
     // I kept trying, my dad told me about Selenium. Did I ignore that advice? Yep.
@@ -121,8 +119,7 @@ const loginSSO = async (username, password, res) => {
     await driver.quit();
 
 }
-const getStudentData = async (accessToken, res) => {
-    
+const getStudentData = async (accessToken, res) => {  
     // This function will use a given session ID to contact the SAC page, and to
     // get some basic user data. Triggered by /user/getDetails.
 
@@ -272,6 +269,13 @@ const getGrades = async (accessToken, res) => {
 
     res.send(responseData);
 }
+const getSchedule = async (accessToken, res) => {
+    let studentInfoPage = await axios.get('https://pac.conroeisd.net/sched.asp', {
+        headers: {
+            'cookie': await authCookie(accessToken)
+        }
+    });
+}
 const destroySACSession = async (accessToken, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
     // This is just the complete opposite of what /login does: it logs out.
@@ -292,4 +296,5 @@ const destroySACSession = async (accessToken, res) => {
 exports.loginSSO = loginSSO;
 exports.getStudentData = getStudentData;
 exports.getGrades = getGrades;
+exports.getSchedule = getSchedule;
 exports.destroySACSession = destroySACSession;

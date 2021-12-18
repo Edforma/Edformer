@@ -144,6 +144,7 @@ const getStudentData = async (accessToken, res) => {
         status: "success",
         registration: {
             name: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(2) > td:nth-child(2)").text(),
+            // campus: $("body > table > tbody > tr > td:nth-child(2) > br:nth-child(2)"),
             grade: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(2) > td:nth-child(4)").text()),
             studentPicture: 'https://pac.conroeisd.net/' + $("body > table > tbody > tr > td:nth-child(1) > img").attr('src'),
             counselor: {

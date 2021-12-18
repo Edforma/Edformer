@@ -131,7 +131,7 @@ const getStudentData = async (accessToken, res) => {
 
     if (studentInfoPage.data.indexOf("Session has ended") >= 0) {
         res.status(400).send({
-            status: "error",
+            status: "failed",
             error: "Invalid/ended session"
         });
         return;
@@ -172,7 +172,6 @@ const getStudentData = async (accessToken, res) => {
 //            lastSessionTimestamp: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(21) > td:nth-child(2)").text() Currently breaks on failing grades
         }
     }
-
     res.send(responseData);
 }
 const getGrades = async (accessToken, res) => {
@@ -185,7 +184,7 @@ const getGrades = async (accessToken, res) => {
     // Detect an ended/invalid session
     if (page.data.indexOf("Session has ended") >= 0) {
         res.status(400).send({
-            status: "error",
+            status: "failed",
             error: "Invalid/ended session"
         });
         return;
@@ -288,7 +287,7 @@ const destroySACSession = async (accessToken, res) => {
       });
     console.log(logoutRequest);
     res.send({
-        status: 'success'
+        status: "success"
     });
 
 }

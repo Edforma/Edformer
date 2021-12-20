@@ -100,7 +100,8 @@ app.get('/server/ping', (req, res) => {
     res.send({
         status: 'success',
         server: {
-            version: null
+            version: null,
+            announcement: config.announcement
         }
     });
 })
@@ -112,11 +113,13 @@ app.use(Sentry.Handlers.errorHandler());
 app.use(function onError(err, req, res, next) {
     // The error id is attached to `res.sentry` to be returned
     // and optionally displayed to the user for support.
-    res.statusCode = 500;
-    res.end(res.sentry + "\n");
+    res.status(500).end(res.sentry + "\n");
 });
 
 // Listen on whatever port is selected
 app.listen(config.port, () => {
-    winston.info(`SSOWrapper now listening on port ${config.port}`)
+    winston.info(`SSOWrapper now listening on port ${config.port}.`)
+    if (config.announcement) {
+        winston.info(`Announcement found: "${config.announcement}"`)
+    }
 })

@@ -97,7 +97,7 @@ app.post('/session/destroySession', (req, res) => {
 })
 
 app.get('/server/ping', (req, res) => {
-    re.send({
+    res.send({
         status: 'success',
         server: {
             version: null,

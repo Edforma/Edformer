@@ -97,7 +97,7 @@ app.post('/session/destroySession', (req, res) => {
 })
 
 app.get('/server/ping', (req, res) => {
-    res.send({
+    re.send({
         status: 'success',
         server: {
             version: null,
@@ -111,9 +111,14 @@ app.use(Sentry.Handlers.errorHandler());
 
 // onError middleware
 app.use(function onError(err, req, res, next) {
-    // The error id is attached to `res.sentry` to be returned
-    // and optionally displayed to the user for support.
-    res.status(500).end(res.sentry + "\n");
+    logger.error(err.stack)
+    res.status(500).send({
+        status: 'failed',
+        sentryId: res.sentry,
+        errorDetails: {
+            error: err.message
+        }
+    });
 });
 
 // Listen on whatever port is selected

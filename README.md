@@ -19,7 +19,7 @@ Run `yarn install` to download all of the required dependencies.
 
 Modify `config.json` to your needs.
 
-Finally, run `node .`. SSOWrapper will begin to listen on the port you chose.
+Finally, run `node .`. If you are running SSOWrapper in this directory for the first time, two directorys will be made: `data` for database storage, and `logs` for log files.
 
 
 ## Troubleshooting

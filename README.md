@@ -22,6 +22,7 @@ Modify `config.json` to your needs.
 Finally, run `node .`. If you are running SSOWrapper in this directory for the first time, two directorys will be made: `data` for database storage, and `logs` for log files.
 
 
-## Troubleshooting
+## Troubleshooting/Questions
 
-(add)
+### How do I make SSOWrapper accessible from outside networks?
+Try [ngrok.](https://ngrok.com/)

@@ -1,4 +1,27 @@
 # SSOWrapper
-API for Conroe ISD's Student Access Center. Now with extra cheese!
 
-This is meant to be a companion to a future project.
+A REST API wrapper for Conroe ISD's Student Access Center.
+
+**Disclaimer:** This program is not affiliated with CISD.
+
+## How does it work?
+
+### Login flow
+SSOWrapper currently uses Selenium to create a "fake" session. It opens the login page and enters the details given from the request, and when it reaches the home page of the SSO, it "clicks" on the Student Access Center button. It then processes the SAC cookie, and sends the request-maker back a token that can be used to get information from the Student Access Center.
+
+### add more later lol
+
+## How do I use it?
+
+Clone this repo: `git clone https://github.com/SACMobile-Team/SSOWrapper.git`.
+
+Run `yarn install` to download all of the required dependencies.
+
+Modify `config.json` to your needs.
+
+Finally, run `node .`. SSOWrapper will begin to listen on the port you chose.
+
+
+## Troubleshooting
+
+(add)

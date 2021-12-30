@@ -128,3 +128,8 @@ app.listen(config.port, () => {
         winston.info(`Announcement found: "${config.announcement}"`)
     }
 })
+
+process.on('SIGINT', function() {
+    logger.info(`Goodnight...😴`)    
+    process.exit();
+});

@@ -29,6 +29,12 @@ Sentry.init({
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
+
+// Temporary
+app.get('/', (req, res) => {
+    res.status(410).send("Cleverly done, Mr. Freeman, but you're not supposed to be here. As a matter of fact, you're not. Get back where you belong, and forget about all this, until we meet again...")
+})
+
 // API endpoints
 app.post('/session/login', (req, res) => {
 

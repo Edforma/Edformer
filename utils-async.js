@@ -190,6 +190,14 @@ const getGrades = async (accessToken, res) => {
         return;
     }
 
+    if (page.data.indexOf("No Averages for this student") >= 0) {
+        res.status(400).send({
+            status: "failed",
+            error: "No averages are available for viewing"
+        });
+        return;
+    }
+
     const classAssignments = xpath
         .fromPageSource(page.data) // Select current page as source
         .findElements("//center/table/tbody/tr/td/font/strong") // Find assignments table

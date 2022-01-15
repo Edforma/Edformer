@@ -22,7 +22,7 @@ const loginSSO = async (username, password, res) => {
     // I kept trying, my dad told me about Selenium. Did I ignore that advice? Yep.
     // Look where we are now.
 
-    logger.info(`Beginning login for user ${username}`)
+    logger.info(`${username} - Beginning login`)
     // Include the chrome driver
     require("chromedriver");
 
@@ -277,11 +277,25 @@ const getGrades = async (accessToken, res) => {
     res.send(responseData);
 }
 const getSchedule = async (accessToken, res) => {
-    let studentInfoPage = await axios.get('https://pac.conroeisd.net/sched.asp', {
+    let page = await axios.get('https://pac.conroeisd.net/sched.asp', {
         headers: {
             'cookie': await authCookie(accessToken)
-        }
+        },
+        timeout: 10000
     });
+
+    // Detect an ended/invalid session
+    if (page.data.indexOf("Session has ended") >= 0) {
+        res.status(400).send({
+            status: "failed",
+            error: "Invalid/ended session"
+        });
+        return;
+    }
+
+    // const classAssignments = xpath
+    //     .fromPageSource(page.data) // Select current page as source
+    //     .findElements("//center/table/tbody/tr[1]/td/font/strong") // Find assignments table
 }
 const destroySACSession = async (accessToken, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.

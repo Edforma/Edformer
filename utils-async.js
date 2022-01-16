@@ -1,4 +1,4 @@
-const { Driver } = require("selenium-webdriver/chrome");
+const chrome = require("selenium-webdriver/chrome");
 const until = require("selenium-webdriver/lib/until");
 const assert = require('assert');
 const axios = require('axios') // Sending requests
@@ -29,7 +29,10 @@ const loginSSO = async (username, password, res) => {
     // Include selenium webdriver + other stuff
     let swd = require("selenium-webdriver");
     let browser = new swd.Builder();
-    let driver = browser.forBrowser("chrome").build()
+    let driver = browser
+    .forBrowser("chrome")
+    .setChromeOptions(new chrome.Options().headless().windowSize({ width:640, height:480 }))
+    .build()
     
     // Open the Login Page
     await driver.get("https://sso.conroeisd.net/_authn/Logon?ru=L3Nzby9wb3J0YWw=");

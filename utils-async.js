@@ -64,12 +64,18 @@ const loginSSO = async (username, password, res) => {
     // Step 7 - Clicking the Sign In button
     await signInBtn.click();
 
-    logger.info(`${username} - Sign in req sent. Waiting for page...`)
+    logger.info(`${username} - Page has reloaded after ...`)
     let sacButton = await driver.findElement(swd.By.id("Student Access Center"))
     .catch((e) => {
-        return logger.error(`${username} - Failed to find SAC button; did the login fail?`);
+        logger.error(`${username} - Failed to find SAC button; did the login fail?`);
+        res.status(400).send({
+            status: "failed",
+            error: "SSO login failed. Check your username and password."
+        })
+        return driver.quit();
     })
-
+    
+    // todo: make this not run when sso login fails.
     await sacButton.click();
 
     // Wait for "Student Access Center" to open in a new tab

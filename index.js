@@ -6,6 +6,7 @@ const config = require('./config.json') // Load configuration data
 const logger = require('./logger') // Set up default logger
 const winston = require('winston')
 const ngrok = require('ngrok');
+const open = require('open');
 
 const Sentry = require('@sentry/node');
 const Tracing = require("@sentry/tracing");
@@ -138,6 +139,9 @@ app.listen(config.port, async () => {
         logger.info('Ngrok is enabled in config, opening...')
         let grktunnel = await ngrok.connect(config.port)
         logger.info(`Ngrok tunnel opened at ${grktunnel}`)
+        if (config.network.openWebUI === true) {
+            open('http://localhost:4040')
+        }
     }
 })
 

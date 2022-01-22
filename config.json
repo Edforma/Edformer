@@ -1,4 +1,7 @@
 {
     "port": 3000,
-    "announcement": ""
+    "announcement": "",
+    "network": {
+        "ngrokEnabled": true
+    }
 }

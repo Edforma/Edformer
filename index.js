@@ -5,6 +5,7 @@ const utils = require('./utils-async') // Utilitys/API functions
 const config = require('./config.json') // Load configuration data
 const logger = require('./logger') // Set up default logger
 const winston = require('winston')
+const ngrok = require('ngrok');
 
 const Sentry = require('@sentry/node');
 const Tracing = require("@sentry/tracing");
@@ -128,14 +129,25 @@ app.use(function onError(err, req, res, next) {
 });
 
 // Listen on whatever port is selected
-app.listen(config.port, () => {
+app.listen(config.port, async () => {
     winston.info(`SSOWrapper now listening on port ${config.port}.`)
     if (config.announcement) {
         winston.info(`Announcement found: "${config.announcement}"`)
     }
+    if (config.network.ngrokEnabled === true) {
+        logger.info('Ngrok is enabled in config, opening...')
+        let grktunnel = await ngrok.connect(config.port)
+        logger.info(`Ngrok tunnel opened at ${grktunnel}`)
+    }
 })
 
-process.on('SIGINT', function() {
-    logger.info(`Goodnight...😴`)    
+process.on('SIGINT', async function() {
+    logger.info(`Shutting down SSOWrapper.`)
+    logger.info('Closing NGROK tunnel.')
+    await ngrok.disconnect().then((a) => {
+        logger.info(`Closed ngrok tunnel: ${a}`)
+    }).catch((e) => {
+        logger.error(`Failed to gracefully close NGROK tunnel!`)
+    })
     process.exit();
 });

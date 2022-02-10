@@ -1,8 +1,8 @@
 {
     "port": 3000,
-    "announcement": "",
+    "announcement": "Conroe ISD will be closed on Friday, February 4th.",
     "network": {
         "ngrokEnabled": true,
-        "openWebUI": true
+        "openWebUI": false
     }
 }

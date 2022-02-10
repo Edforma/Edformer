@@ -102,8 +102,7 @@ const loginSSO = async (username, password, res) => {
         // We only care about the first one. For some reason, this is the ONLY cookie you need to access SAC.
         // To make things worse, it's not set to httpOnly! Come on, Terry McClaugherty!
         // Anyways, SSOEA is just a token used for other SSO stuff we don't care about.
-        // ASPSESSIONID should be the first cookie grabbed by getCookies(), so because i'm too lazy to filter
-        // JSON at 10:09 PM, i'm just gonna steal the first cookie in the array. 
+        // ASPSESSIONID should be the first cookie grabbed by getCookies().
 
         let sacCookie = cookies[0];
 
@@ -119,9 +118,8 @@ const loginSSO = async (username, password, res) => {
         })
 
         logger.info(`${username} - Created session UUID: ${sessionDoc._id}`)
-
-        logger.info(`${username} - Responded with session!`)
         res.send({ status: "success", accessToken: accessToken});
+        logger.info(`${username} - Responded with session!`)
     })
 
     // Finish up by closing the tab, it has done it's job!

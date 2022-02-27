@@ -7,4 +7,5 @@ data/
 // Winston logs
 logs/
 *.log
+
 .DS_Store

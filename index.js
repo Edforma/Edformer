@@ -34,7 +34,10 @@ app.use(Sentry.Handlers.tracingHandler());
 
 // Temporary
 app.get('/', (req, res) => {
-    res.status(410).send("Cleverly done, Mr. Freeman, but you're not supposed to be here. As a matter of fact, you're not. Get back where you belong, and forget about all this, until we meet again...")
+    res.status(410).send({
+        status: "arbitrary_impositon",
+        error: `Cleverly done, ${req.ip} but you're not supposed to be here. As a matter of fact, you're not. Get back where you belong, and forget about all this, until we meet again.`
+    })
 })
 
 // API endpoints
@@ -137,7 +140,7 @@ app.listen(config.port, async () => {
     }
     if (config.network.ngrokEnabled === true) {
         logger.info('Ngrok is enabled in config, opening...')
-        let grktunnel = await ngrok.connect(config.port)
+        let grktunnel = await ngrok.connect(addrconfig.port)
         logger.info(`Ngrok tunnel opened at ${grktunnel}`)
         if (config.network.openWebUI === true) {
             open('http://localhost:4040')

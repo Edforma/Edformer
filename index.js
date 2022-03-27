@@ -150,11 +150,13 @@ app.listen(config.port, async () => {
 
 process.on('SIGINT', async function() {
     logger.info(`Shutting down SSOWrapper.`)
-    logger.info('Closing NGROK tunnel.')
-    await ngrok.disconnect().then((a) => {
-        logger.info(`Closed ngrok tunnel: ${a}`)
-    }).catch((e) => {
-        logger.error(`Failed to gracefully close NGROK tunnel!`)
-    })
+    if (config.network.ngrokEnabled === true) {
+        logger.info('Closing NGROK tunnel.')
+        await ngrok.disconnect().then((a) => {
+            logger.info(`Closed ngrok tunnel: ${a}`)
+        }).catch((e) => {
+            logger.error(`Failed to gracefully close NGROK tunnel!`)
+        })
+    }
     process.exit();
 });

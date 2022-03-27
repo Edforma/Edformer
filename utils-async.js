@@ -205,6 +205,14 @@ const getGrades = async (accessToken, res) => {
         return;
     }
 
+    if (page.data.indexOf("Viewing of grades is currently disabled") >= 0) {
+        res.status(400).send({
+            status: "failed",
+            error: "Viewing of grades is disabled"
+        });
+        return;
+    }
+
     const classAssignments = xpath
         .fromPageSource(page.data) // Select current page as source
         .findElements("//center/table/tbody/tr/td/font/strong") // Find assignments table

@@ -291,30 +291,27 @@ const getGrades = async (accessToken, res) => {
 
     res.send(responseData);
 }
-const getSchedule = async (accessToken, res) => {
-    let page = await axios.get('https://pac.conroeisd.net/sched.asp', {
-        headers: {
-            'cookie': await authCookie(accessToken)
-        },
-        timeout: 10000
-    });
 
-    // Detect an ended/invalid session
-    if (page.data.indexOf("Session has ended") >= 0) {
-        res.status(400).send({
-            status: "failed",
-            error: "Invalid/ended session"
-        });
-        return;
-    }
+// // This does not work. I do not know why.
+// const getSchedule = async (accessToken, res) => {
+//     await axios.get('https://pac.conroeisd.net/sched.asp', {
+//         headers: {
+//             'cookie': await authCookie(accessToken)
+//         }
+//     }).then((r) => {
+//         // Detect an ended/invalid session
+//         if (r.data.indexOf("Session has ended") >= 0) {
+//             return;
+//         }
+//     })
 
-    // const classAssignments = xpath
-    //     .fromPageSource(page.data) // Select current page as source
-    //     .findElements("//center/table/tbody/tr[1]/td/font/strong") // Find assignments table
-}
+// }
+
 const destroySACSession = async (accessToken, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
     // This is just the complete opposite of what /login does: it logs out.
+    // The SAC server does not send back any errors if a login token doesn't even exist.
+    // Thanks, Jarod...
 
     // Create a logout request.
     let logoutRequest = await axios.get('https://pac.conroeisd.net/logout.asp', {

@@ -304,7 +304,6 @@ const getGrades = async (accessToken, res) => {
 //             return;
 //         }
 //     })
-
 // }
 
 const destroySACSession = async (accessToken, res) => {
@@ -329,5 +328,4 @@ const destroySACSession = async (accessToken, res) => {
 exports.loginSSO = loginSSO;
 exports.getStudentData = getStudentData;
 exports.getGrades = getGrades;
-exports.getSchedule = getSchedule;
 exports.destroySACSession = destroySACSession;

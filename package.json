@@ -1,5 +1,5 @@
 {
-  "name": "ssowrapper",
+  "name": "edformer",
   "version": "1.0.0",
   "description": "A REST API for Conroe ISD's SSO system, using Selenium",
   "main": "index.js",

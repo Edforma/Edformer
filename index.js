@@ -134,7 +134,7 @@ app.use(function onError(err, req, res, next) {
 
 // Listen on whatever port is selected
 app.listen(config.port, async () => {
-    winston.info(`SSOWrapper now listening on port ${config.port}.`)
+    winston.info(`Edformer now listening on port ${config.port}.`)
     if (config.announcement) {
         winston.info(`Announcement found: "${config.announcement}"`)
     }
@@ -149,7 +149,7 @@ app.listen(config.port, async () => {
 })
 
 process.on('SIGINT', async function() {
-    logger.info(`Shutting down SSOWrapper.`)
+    logger.info(`Shutting down Edformer.`)
     if (config.network.ngrokEnabled === true) {
         logger.info('Closing NGROK tunnel.')
         await ngrok.disconnect().then((a) => {

@@ -1,6 +1,6 @@
 {
     "port": 3000,
-    "announcement": "",
+    "announcement": "Conroe ISD will be closed on April 9th for inclement weather.",
     "network": {
         "ngrokEnabled": false,
         "openWebUI": false

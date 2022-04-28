@@ -1834,12 +1834,7 @@ ws@>=7.4.6:
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.5.0.tgz#bfb4be96600757fe5382de12c670dab984a1ed4f"
   integrity sha512-BWX0SWVgLPzYwF8lTzEy1egjhS4S4OEAHfsO8o65WOVsrnSRGaSiUaa9e0ggGlkMTtBlmOpEXiie9RUcBO86qg==
 
-xmldom@0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/xmldom/-/xmldom-0.3.0.tgz#e625457f4300b5df9c2e1ecb776147ece47f3e5a"
-  integrity sha512-z9s6k3wxE+aZHgXYxSTpGDo7BYOUfJsIRyoZiX6HTjwpwfS2wpQBQKa2fD+ShLyPkqDYo5ud7KitmLZ2Cd6r0g==
-
-xmldom@^0.6.0:
+xmldom@0.6.0, xmldom@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/xmldom/-/xmldom-0.6.0.tgz#43a96ecb8beece991cef382c08397d82d4d0c46f"
   integrity sha512-iAcin401y58LckRZ0TkI4k0VSM1Qg0KGSc3i8rU+xrxe19A/BN1zHyVSJY7uoutVlaTSzYyk/v5AmkewAP7jtg==
@@ -1849,14 +1844,14 @@ xmlserializer@0.6.1:
   resolved "https://registry.yarnpkg.com/xmlserializer/-/xmlserializer-0.6.1.tgz#14099f60272e16cb608be3758992f998070cc29a"
   integrity sha512-FNb0eEqqUUbnuvxuHqNuKH8qCGKqxu+558Zi8UzOoQk8Z9LdvpONK+v7m3gpKVHrk5Aq+0nNLsKxu/6OYh7Umw==
 
-xpath-html@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/xpath-html/-/xpath-html-1.0.2.tgz#ae4e286ef144e8785119d46edfc1e0f66d54d55b"
-  integrity sha512-EuwNG90Gpm/azSf9CphUCnX3Mp6IEvIZpltM9sRITcqso3LX+1+AOOBH/Sqj0fh8Q0pArGGDkxaYDQ/hs+10IA==
+xpath-html@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/xpath-html/-/xpath-html-1.0.3.tgz#b1d0a9e24e3b250b77c970a2bf39bb11cad92cdf"
+  integrity sha512-UpzQll0ob0LL0sfp5eu8u7IyklLS78ieukjg8D8cefFs+psr1n92xkW4FxaXQydEDC1pm2s5yvdgLCCVfJTjhg==
   dependencies:
     lodash.get "4.4.2"
     parse5 "6.0.0"
-    xmldom "0.3.0"
+    xmldom "0.6.0"
     xmlserializer "0.6.1"
     xpath "0.0.27"
 

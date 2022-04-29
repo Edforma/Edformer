@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A REST API for Conroe ISD's SSO system, using Selenium",
   "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
   "author": "Griffin Bauer",
   "license": "MIT",
   "dependencies": {
@@ -19,5 +22,8 @@
     "winston": "^3.6.0",
     "xmldom": "^0.6.0",
     "xpath-html": "^1.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "..."
   }
 }

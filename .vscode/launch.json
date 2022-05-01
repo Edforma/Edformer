@@ -5,18 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
-            "name": "nodemon",
+            "name": "Launch Program",
             "program": "${workspaceFolder}/index.js",
             "request": "launch",
-            "restart": true,
-            "runtimeExecutable": "nodemon",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "type": "pwa-node",
             "outputCapture": "std" // Winston doesn't get captured without this
-        }
+        },
     ]
 }

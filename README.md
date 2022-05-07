@@ -7,7 +7,7 @@ The API for Edforma.
 ## How does it work?
 
 ### Login flow
-Enboard, the Conroe ISD SSO, uses a special endpoint on the SAC in order to gain login credentials. It utilizes `sso.asp`. The SSO sends the username and password to this endpoint, which the server responds to with a token, just like a regular login. This token is stored for later.
+Enboard, the Conroe ISD SSO, uses a special endpoint on the SAC webserver in order to gain login credentials: `sac.asp`. Sending a username and password (along with soem Enboard parameters) will return a logged in session. Edformer utilizes this endpoint, allowing for logins to be as fast as they are on the real SSO.
 
 ### add more later lol
 

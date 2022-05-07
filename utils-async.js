@@ -1,13 +1,14 @@
-const chrome = require("selenium-webdriver/chrome");
-const until = require("selenium-webdriver/lib/until");
-const assert = require('assert');
-const axios = require('axios') // Sending requests
+const axios = require('axios').default // Sending requests
 const cheerio = require('cheerio');
 const xpath = require('xpath-html');
 const { randomUUID } = require("crypto");
 const PouchDB = require('pouchdb')
 const db = new PouchDB('data')
-const logger = require('winston')
+const logger = require('winston');
+const url = require('url')
+
+const { wrapper } = require('axios-cookiejar-support')
+const { CookieJar } = require('tough-cookie')
 
 // Utility stuff for other functions
 const authCookie = async function(accessToken) {
@@ -18,113 +19,50 @@ const authCookie = async function(accessToken) {
 // Functions called directly by api
 const loginSSO = async (username, password, res) => {
     // This function is used to log into the Student Access Center page.
-    // I *tried* to make it so I could just get it with an API call, but that wasn't working.
-    // I kept trying, my dad told me about Selenium. Did I ignore that advice? Yep.
-    // Look where we are now.
+    // THis used to use Selenium, and a fake browser in order to obtain the cookie.
+    // We now utilize the sso.asp endpoint, used by Enboard (SSO) to log into the SAC.
+    // It is MUCH faster (~6 seconds faster), and MUCH less resource intensive (no need for chrome to open).
+    // When we send the request, we'll be getting back the SAC home page due to the redirect it gives. Not needed, but interesting.
+    // What IS interesting is that we can now accurately determine incorrect details, as the SAC returns a well parsable error message! Neat!
 
     logger.info(`${username} - Beginning login`)
-    // Include the chrome driver
-    require("chromedriver");
 
-    // Include selenium webdriver + other stuff
-    let swd = require("selenium-webdriver");
-    let browser = new swd.Builder();
-    let driver = browser
-    .forBrowser("chrome")
-    .setChromeOptions(new chrome.Options().headless().windowSize({ width:640, height:480 }))
-    .build()
-    
-    // Open the Login Page
-    await driver.get("https://sso.conroeisd.net/_authn/Logon?ru=L3Nzby9wb3J0YWw=");
-    
-    await driver.manage().setTimeouts({implicit: 10000});
-
-    // Store the ID of the original window
-    const originalWindow = await driver.getWindowHandle();
-
-    // Check we don't have other windows open already
-    assert((await driver.getAllWindowHandles()).length === 1);
-
-    let usernameBox = await driver.findElement(swd.By.css("#Username"));
-
-    // Step 3 - Entering the username
-    await usernameBox.sendKeys(username);
-    logger.info(`${username} - Entered username`)
-
-    // Step 4 - Finding the password input
-    let passwordBox = await driver.findElement(swd.By.css("#Password"));
-
-    // Step 5 - Entering the password
-    await passwordBox.sendKeys(password);
-    logger.info(`${username} - Entered password`)
-
-    // Step 6 - Finding the Sign In button
-    let signInBtn = await driver.findElement(swd.By.css("#login-button"));
-
-    // Step 7 - Clicking the Sign In button
-    await signInBtn.click();
-
-    logger.info(`${username} - Page has reloaded after ...`)
-    let sacButton = await driver.findElement(swd.By.id("Student Access Center"))
-    .catch((e) => {
-        logger.error(`${username} - Failed to find SAC button; did the login fail?`);
-        res.status(400).send({
-            status: "failed",
-            error: "SSO login failed. Check your username and password."
-        })
-        return driver.quit();
+    const jar = new CookieJar()
+    const axiosTc = wrapper(axios.create({ jar }))
+    // Assemble data string. The SAC needs this, as it expects a bunch of Enboard parameters. It *is* meant to be used from Enboard...
+    let dataToSend = new url.URLSearchParams({
+        __EVENTTARGET: 'submitX',
+        __EVENTARGUMENT: '',
+        stuuser: username,
+        password: password,
+        __ASYNCPOST: false,
     })
-    
-    // todo: make this not run when sso login fails.
-    await sacButton.click();
 
-    // Wait for "Student Access Center" to open in a new tab
-    await driver.wait(
-        async () => (await driver.getAllWindowHandles()).length === 2,
-        10000
-    );
+    // `__EVENTTARGET=submitX&__EVENTARGUMENT=&stuuser=${username}&password=${password}&__ASYNCPOST=false`
 
-    // Find the newly opened tab and switch to it
-    const windows = await driver.getAllWindowHandles();
-    windows.forEach(async handle => {
-        if (handle !== originalWindow) {
-            await driver.switchTo().window(handle);
+    await axiosTc.post('https://pac.conroeisd.net/sso.asp?u=1', dataToSend.toString(), {
+        headers: {
+            accept: '*/*',
+            'content-type': 'application/x-www-form-urlencoded'
         }
-    });
-
-    // Wait for Student Access Center to fully render, and to give us our cookie
-    await driver.wait(until.titleContains('Student Information System'), 10000);
-    logger.info(`${username} - SAC login finished. Creating session.`)
-    
-    // Send back the cookie to the device for further usage!
-    await driver.manage().getCookies().then(function (cookies) {
-        // At this point, we should have two cookies: ASPSESSIONID********** (random letters), and SSOEA.
-        // We only care about the first one. For some reason, this is the ONLY cookie you need to access SAC.
-        // To make things worse, it's not set to httpOnly! Come on, Terry McClaugherty!
-        // Anyways, SSOEA is just a token used for other SSO stuff we don't care about.
-        // ASPSESSIONID should be the first cookie grabbed by getCookies().
-
-        let sacCookie = cookies[0];
-
-        let accessToken = randomUUID();
+    }).then((r) => {
+        // Just some cookie storage
+        // TODO: DON'T USE THIS! ._headers is deprecated and shouldn't be used. Find a substitute!
+        let cookieInfo = r.request._headers.cookie.split('=')
+        let accessToken = randomUUID()
 
         var sessionDoc = {
             "_id": "session-" + accessToken,
-            cookieData: { name: sacCookie.name, token: sacCookie.value}
+            cookieData: { name: cookieInfo[0], token: cookieInfo[1]}
         }
-        db.put(sessionDoc)
-        .catch((e) => {
+        db.put(sessionDoc).catch((e) => {
             return logger.error(`${username} - Failed to put session doc. ${e}`)
         })
 
-        logger.info(`${username} - Created session UUID: ${sessionDoc._id}`)
+        logger.info(`${username} - Created session UUID: ${sessionDoc._id} for cookie ${r.request._headers.cookie}`)
         res.send({ status: "success", accessToken: accessToken});
         logger.info(`${username} - Responded with session!`)
     })
-
-    // Finish up by closing the tab, it has done it's job!
-    await driver.quit();
-
 }
 const getStudentData = async (accessToken, res) => {  
     // This function will use a given session ID to contact the SAC page, and to
@@ -212,6 +150,136 @@ const getGrades = async (accessToken, res) => {
         });
         return;
     }
+
+    function parseTable(tBodyNode, parsedData) {
+
+        console.log("numberOfChildNodes", tBodyNode.childNodes.length);
+        console.log("numberOfTrs", xpath.fromNode(tBodyNode).findElements("/tr").length);
+
+        for (const trNode in tBodyNode.childNodes) {
+            if (Object.hasOwnProperty.call(tBodyNode.childNodes, trNode)) {
+                const element = tBodyNode.childNodes[trNode];
+                console.log(element);
+            }
+
+        }
+
+        var tableData = //[...xpath.fromNode(tBodyNode).findElements("/tr")]
+            [...tBodyNode.childNodes]
+            .reduce((accTableData, rowNode, i) => {
+                if(rowNode.getAttribute("class") === 'trc') {
+
+                    var headers = xpath.fromNode(rowNode)
+                        .findElements("/td")
+                        .map(tdNode => ({element: tdNode, textContent: tdNode.textContent}));
+
+                    accTableData.headers.push(headers);
+
+                } else {
+                    var values = xpath.fromNode(rowNode)
+                        .findElements("/td")
+                        .reduce((accValue, tdNode, i, allTds) => {
+
+                            var fields = accTableData.headers[accTableData.headers.length - 1];
+
+                            if (fields.length != allTds.length)
+                            {
+                                console.log("Failed to process row - field count mismatch", tdNode);
+                                return accValue;
+                            }
+
+                            var fieldName = fields[i].textContent;
+
+                            accValue[fieldName] = {
+                                element: tdNode,
+                                textContent: tdNode.textContent
+                            }
+                            
+                            return accValue;
+                        }, {});
+
+                    accTableData.rows.push(values);
+                }
+                return accTableData;
+            },
+            {
+                headers: [],
+                rows: [],
+                subTables: []
+            });
+
+        return tableData;
+    }
+
+    // const tables = xpath
+    //     .fromPageSource(page.data)
+    //     .findElements("//center/table/tbody")
+    //     .map(tableNode => parseTable(tableNode));
+
+    function parseCheerioTable($, tBodyNode, parsedData) {
+        console.log("numberOfChildNodes", tBodyNode.childNodes.length);
+        console.log("numberOfTrs", xpath.fromNode(tBodyNode).findElements("/tr").length);
+
+        if(tBodyNode.childNodes.length === 2) {
+            // This is a stupid nested table thing
+            const nestedTableBody = $(tBodyNode).find("> tr > td > table > tbody");
+            if(nestedTableBody?.length === 1) {
+                return parseCheerioTable($, nestedTableBody, parsedData);
+            } else {
+                return null;
+            }
+            
+        }
+
+        var tableData = [...tBodyNode.childNodes]
+            .reduce((accTableData, rowNode, i) => {
+                if(rowNode.attribs?.class === 'trc') {
+
+                    var headers = $(rowNode)
+                        .find("> td")
+                        .map((i, tdNode) => ({element: tdNode, text: $(tdNode).text()}));
+
+                    accTableData.headers.push(headers);
+
+                } else {
+                    var values = [...$(rowNode).find("> td")]
+                        .reduce((accValue, tdNode, i, allTds) => {
+
+                            var fields = accTableData.headers[accTableData.headers.length - 1];
+
+                            if (fields.length != allTds.length)
+                            {
+                                console.log("Failed to process row - field count mismatch", tdNode);
+                                return accValue;
+                            }
+
+                            var fieldName = fields[i].text;
+
+                            accValue[fieldName] = {
+                                element: tdNode,
+                                text: $(tdNode).text()
+                            }
+                            
+                            return accValue;
+                        }, {});
+
+                    accTableData.rows.push(values);
+                }
+                return accTableData;
+            },
+            {
+                headers: [],
+                rows: [],
+                subTables: []
+            });
+
+        return tableData;
+    }
+
+    const $ = cheerio.load(page.data);
+    const tables = $("center > table > tbody").map((i, el) => parseCheerioTable($, el));
+
+    console.log("table data", tables)
 
     const classAssignments = xpath
         .fromPageSource(page.data) // Select current page as source

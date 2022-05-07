@@ -7,7 +7,7 @@ The API for Edforma.
 ## How does it work?
 
 ### Login flow
-Edformer currently uses Selenium to create an (automated) browser session. It opens the login page and enters the details given from the request, and when it reaches the home page of the SSO, it "clicks" on the Student Access Center button. It then processes the SAC cookie, and sends the request-maker back a token that can be used to get information from the Student Access Center. For the most detail, see `utils-async.js`.
+Enboard, the Conroe ISD SSO, uses a special endpoint on the SAC in order to gain login credentials. It utilizes `sso.asp`. The SSO sends the username and password to this endpoint, which the server responds to with a token, just like a regular login. This token is stored for later.
 
 ### add more later lol
 

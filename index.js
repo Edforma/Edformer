@@ -125,10 +125,7 @@ app.use(function onError(err, req, res, next) {
     logger.error(err.stack)
     res.status(500).send({
         status: 'failed',
-        sentryId: res.sentry,
-        errorDetails: {
-            error: err.message
-        }
+        error: err.message
     });
 });
 

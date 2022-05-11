@@ -385,7 +385,7 @@ const destroySACSession = async (accessToken, res) => {
         headers: {
           'cookie': await authCookie(accessToken)
         }
-      });
+    });
     console.log(logoutRequest);
     res.send({
         status: "success"

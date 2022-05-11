@@ -46,6 +46,12 @@ const loginSSO = async (username, password, res) => {
             'content-type': 'application/x-www-form-urlencoded'
         }
     }).then((r) => {
+        // Looks for a response regarding invalid creds
+        // "User not found or incorrect information."
+        if (r.data.indexOf("User not found or incorrect information.") >= 0) {
+            return res.send({ status: "failed", error: "User not found or incorrect information."})
+        }
+
         // Just some cookie storage
         // TODO: DON'T USE THIS! ._headers is deprecated and shouldn't be used. Find a substitute!
         let cookieInfo = r.request._headers.cookie.split('=')

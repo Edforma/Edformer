@@ -53,18 +53,16 @@ const loginSSO = async (username, password, res) => {
         }
 
         // Just some cookie storage
-        // TODO: DON'T USE THIS! ._headers is deprecated and shouldn't be used. Find a substitute!
-        let cookieInfo = r.request._headers.cookie.split('=')
+        let cookieInfo = jar.toJSON().cookies[0]
         let accessToken = randomUUID()
 
         var sessionDoc = {
             "_id": "session-" + accessToken,
-            cookieData: { name: cookieInfo[0], token: cookieInfo[1]}
+            cookieData: { name: cookieInfo.key, token: cookieInfo.value}
         }
         db.put(sessionDoc).catch((e) => {
             return logger.error(`${username} - Failed to put session doc. ${e}`)
         })
-
         logger.info(`${username} - Created session UUID: ${sessionDoc._id} for cookie ${r.request._headers.cookie}`)
         res.send({ status: "success", accessToken: accessToken});
         logger.info(`${username} - Responded with session!`)

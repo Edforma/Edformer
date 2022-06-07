@@ -281,9 +281,8 @@ const getGrades = async (accessToken, res) => {
     }
 
     const $ = cheerio.load(page.data);
-    const tables = $("center > table > tbody").map((i, el) => parseCheerioTable($, el));
-
-    console.log("table data", tables)
+    // const tables = $("center > table > tbody").map((i, el) => parseCheerioTable($, el));
+    // console.log("table data", tables)
 
     const classAssignments = xpath
         .fromPageSource(page.data) // Select current page as source

@@ -385,5 +385,4 @@ const destroySACSession = async (accessToken, res) => {
 exports.loginSSO = loginSSO;
 exports.getStudentData = getStudentData;
 exports.getGrades = getGrades;
-exports.getSchedule = getSchedule;
 exports.destroySACSession = destroySACSession;

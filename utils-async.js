@@ -11,7 +11,7 @@ const { wrapper } = require('axios-cookiejar-support')
 const { CookieJar } = require('tough-cookie')
 
 // Utility stuff for other functions
-const authCookie = async function(accessToken) {
+const authCookie = async function (accessToken) {
     let authDoc = await db.get("session-" + accessToken)
     return authDoc.cookieData.name + '=' + authDoc.cookieData.token
 }
@@ -49,7 +49,8 @@ const loginSSO = async (username, password, res) => {
         // Looks for a response regarding invalid creds
         // "User not found or incorrect information."
         if (r.data.indexOf("User not found or incorrect information.") >= 0) {
-            return res.send({ status: "failed", error: "User not found or incorrect information."})
+            // Set the status code to 401, and send the error message.
+            return res.status(401).send({ status: "failed", error: "User not found or incorrect information." })
         }
 
         // Just some cookie storage
@@ -58,17 +59,17 @@ const loginSSO = async (username, password, res) => {
 
         var sessionDoc = {
             "_id": "session-" + accessToken,
-            cookieData: { name: cookieInfo.key, token: cookieInfo.value}
+            cookieData: { name: cookieInfo.key, token: cookieInfo.value }
         }
         db.put(sessionDoc).catch((e) => {
             return logger.error(`${username} - Failed to put session doc. ${e}`)
         })
         logger.info(`${username} - Created session UUID: ${sessionDoc._id} for cookie ${cookieInfo}`)
-        res.send({ status: "success", accessToken: accessToken});
+        res.send({ status: "success", accessToken: accessToken });
         logger.info(`${username} - Responded with session!`)
     })
 }
-const getStudentData = async (accessToken, res) => {  
+const getStudentData = async (accessToken, res) => {
     // This function will use a given session ID to contact the SAC page, and to
     // get some basic user data. Triggered by /user/getDetails.
 
@@ -118,7 +119,7 @@ const getStudentData = async (accessToken, res) => {
             lunchFunds: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(14) > td:nth-child(2)").text().split(" ")[0],
             studentUsername: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(16) > td:nth-child(2)").text(),
             studentID: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(15) > td:nth-child(2)").text(),
-//            lastSessionTimestamp: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(21) > td:nth-child(2)").text() Currently breaks on failing grades
+            //            lastSessionTimestamp: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(21) > td:nth-child(2)").text() Currently breaks on failing grades
         }
     }
     res.send(responseData);
@@ -170,47 +171,46 @@ const getGrades = async (accessToken, res) => {
 
         var tableData = //[...xpath.fromNode(tBodyNode).findElements("/tr")]
             [...tBodyNode.childNodes]
-            .reduce((accTableData, rowNode, i) => {
-                if(rowNode.getAttribute("class") === 'trc') {
+                .reduce((accTableData, rowNode, i) => {
+                    if (rowNode.getAttribute("class") === 'trc') {
 
-                    var headers = xpath.fromNode(rowNode)
-                        .findElements("/td")
-                        .map(tdNode => ({element: tdNode, textContent: tdNode.textContent}));
+                        var headers = xpath.fromNode(rowNode)
+                            .findElements("/td")
+                            .map(tdNode => ({ element: tdNode, textContent: tdNode.textContent }));
 
-                    accTableData.headers.push(headers);
+                        accTableData.headers.push(headers);
 
-                } else {
-                    var values = xpath.fromNode(rowNode)
-                        .findElements("/td")
-                        .reduce((accValue, tdNode, i, allTds) => {
+                    } else {
+                        var values = xpath.fromNode(rowNode)
+                            .findElements("/td")
+                            .reduce((accValue, tdNode, i, allTds) => {
 
-                            var fields = accTableData.headers[accTableData.headers.length - 1];
+                                var fields = accTableData.headers[accTableData.headers.length - 1];
 
-                            if (fields.length != allTds.length)
-                            {
-                                console.log("Failed to process row - field count mismatch", tdNode);
+                                if (fields.length != allTds.length) {
+                                    console.log("Failed to process row - field count mismatch", tdNode);
+                                    return accValue;
+                                }
+
+                                var fieldName = fields[i].textContent;
+
+                                accValue[fieldName] = {
+                                    element: tdNode,
+                                    textContent: tdNode.textContent
+                                }
+
                                 return accValue;
-                            }
+                            }, {});
 
-                            var fieldName = fields[i].textContent;
-
-                            accValue[fieldName] = {
-                                element: tdNode,
-                                textContent: tdNode.textContent
-                            }
-                            
-                            return accValue;
-                        }, {});
-
-                    accTableData.rows.push(values);
-                }
-                return accTableData;
-            },
-            {
-                headers: [],
-                rows: [],
-                subTables: []
-            });
+                        accTableData.rows.push(values);
+                    }
+                    return accTableData;
+                },
+                    {
+                        headers: [],
+                        rows: [],
+                        subTables: []
+                    });
 
         return tableData;
     }
@@ -224,24 +224,24 @@ const getGrades = async (accessToken, res) => {
         console.log("numberOfChildNodes", tBodyNode.childNodes.length);
         console.log("numberOfTrs", xpath.fromNode(tBodyNode).findElements("/tr").length);
 
-        if(tBodyNode.childNodes.length === 2) {
+        if (tBodyNode.childNodes.length === 2) {
             // This is a stupid nested table thing
             const nestedTableBody = $(tBodyNode).find("> tr > td > table > tbody");
-            if(nestedTableBody?.length === 1) {
+            if (nestedTableBody?.length === 1) {
                 return parseCheerioTable($, nestedTableBody, parsedData);
             } else {
                 return null;
             }
-            
+
         }
 
         var tableData = [...tBodyNode.childNodes]
             .reduce((accTableData, rowNode, i) => {
-                if(rowNode.attribs?.class === 'trc') {
+                if (rowNode.attribs?.class === 'trc') {
 
                     var headers = $(rowNode)
                         .find("> td")
-                        .map((i, tdNode) => ({element: tdNode, text: $(tdNode).text()}));
+                        .map((i, tdNode) => ({ element: tdNode, text: $(tdNode).text() }));
 
                     accTableData.headers.push(headers);
 
@@ -251,8 +251,7 @@ const getGrades = async (accessToken, res) => {
 
                             var fields = accTableData.headers[accTableData.headers.length - 1];
 
-                            if (fields.length != allTds.length)
-                            {
+                            if (fields.length != allTds.length) {
                                 console.log("Failed to process row - field count mismatch", tdNode);
                                 return accValue;
                             }
@@ -263,7 +262,7 @@ const getGrades = async (accessToken, res) => {
                                 element: tdNode,
                                 text: $(tdNode).text()
                             }
-                            
+
                             return accValue;
                         }, {});
 
@@ -271,11 +270,11 @@ const getGrades = async (accessToken, res) => {
                 }
                 return accTableData;
             },
-            {
-                headers: [],
-                rows: [],
-                subTables: []
-            });
+                {
+                    headers: [],
+                    rows: [],
+                    subTables: []
+                });
 
         return tableData;
     }
@@ -297,7 +296,7 @@ const getGrades = async (accessToken, res) => {
             var assignments = tableNodeXPath
                 .findElements('//tr[@bgcolor]')
                 .flatMap(trNode => {
-                    return trNode.childNodes.length == 10 
+                    return trNode.childNodes.length == 10
                         ? [{
                             dueDate: trNode.childNodes[0].textContent.trim(),
                             assignedDate: trNode.childNodes[1].textContent.trim(),
@@ -312,7 +311,7 @@ const getGrades = async (accessToken, res) => {
             return { course, assignments }
         })
         .reduce((acc, assignments) => {
-            return {...acc, [assignments.course]: assignments}
+            return { ...acc, [assignments.course]: assignments }
         }, {});
 
     const classAverages = xpath
@@ -350,7 +349,7 @@ const getGrades = async (accessToken, res) => {
     //                 }
     //             });
     //     })
-    
+
 
 
 
@@ -363,19 +362,6 @@ const getGrades = async (accessToken, res) => {
     res.send(responseData);
 }
 
-// // This does not work. I do not know why.
-// const getSchedule = async (accessToken, res) => {
-//     await axios.get('https://pac.conroeisd.net/sched.asp', {
-//         headers: {
-//             'cookie': await authCookie(accessToken)
-//         }
-//     }).then((r) => {
-//         // Detect an ended/invalid session
-//         if (r.data.indexOf("Session has ended") >= 0) {
-//             return;
-//         }
-//     })
-// }
 
 const destroySACSession = async (accessToken, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
@@ -386,7 +372,7 @@ const destroySACSession = async (accessToken, res) => {
     // Create a logout request.
     let logoutRequest = await axios.get('https://pac.conroeisd.net/logout.asp', {
         headers: {
-          'cookie': await authCookie(accessToken)
+            'cookie': await authCookie(accessToken)
         }
     });
     console.log(logoutRequest);
@@ -399,4 +385,5 @@ const destroySACSession = async (accessToken, res) => {
 exports.loginSSO = loginSSO;
 exports.getStudentData = getStudentData;
 exports.getGrades = getGrades;
+exports.getSchedule = getSchedule;
 exports.destroySACSession = destroySACSession;

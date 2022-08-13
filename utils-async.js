@@ -63,7 +63,7 @@ const loginSSO = async (username, password, res) => {
         db.put(sessionDoc).catch((e) => {
             return logger.error(`${username} - Failed to put session doc. ${e}`)
         })
-        logger.info(`${username} - Created session UUID: ${sessionDoc._id} for cookie ${r.request._headers.cookie}`)
+        logger.info(`${username} - Created session UUID: ${sessionDoc._id} for cookie ${cookieInfo}`)
         res.send({ status: "success", accessToken: accessToken});
         logger.info(`${username} - Responded with session!`)
     })

@@ -303,7 +303,8 @@ const getGrades = async (accessToken, res) => {
                             assignmentName: trNode.childNodes[2].textContent.trim(),
                             category: trNode.childNodes[3].textContent.trim(),
                             score: parseFloat(trNode.childNodes[4].textContent.trim()),
-                            totalPoints: parseInt(trNode.childNodes[7].textContent.trim())
+                            totalPoints: parseInt(trNode.childNodes[7].textContent.trim()),
+                            percentage: parseInt(trNode.childNodes[9].textContent.trim())
                         }]
                         : []
                 });

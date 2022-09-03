@@ -34,6 +34,4 @@ Try [ngrok.](https://ngrok.com/)
 - Cheerio
 - XPath
 - Axios
-- Selenium
-- ChromeDriver
 - Sentry

@@ -5,11 +5,10 @@ The API for Edforma.
 **Disclaimer:** This program is not affiliated with CISD.
 
 ## How does it work?
+When a student requests to use the SAC from ClassLink, CL will send a `POST` request the SAC webserver using an endpoint named `sso.asp`, sending alongside the student's username and password (it also sends some SSO related parameters that are unimportant). The SAC webserver returns a valid SAC session token located in `set-cookie.`
 
-### Login flow
-Enboard, the Conroe ISD SSO, uses a special endpoint on the SAC webserver in order to gain login credentials: `sac.asp`. Sending a username and password (along with soem Enboard parameters) will return a logged in session. Edformer utilizes this endpoint, allowing for logins to be as fast as they are on the real SSO.
+Edformer replicates this flow in a server environment and grabs the authenticated token cookie, creates a new entry for it in a local database with a UUID reference, and sends that to the client. That UUID can then be used until the session expires.
 
-### add more later lol
 
 ## How do I use it?
 

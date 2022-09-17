@@ -23,7 +23,7 @@ const loginSSO = async (username, password, res) => {
     // We now utilize the sso.asp endpoint, used by Enboard (SSO) to log into the SAC.
     // It is MUCH faster (~6 seconds faster), and MUCH less resource intensive (no need for chrome to open).
     // When we send the request, we'll be getting back the SAC home page due to the redirect it gives. Not needed, but interesting.
-    // What IS interesting is that we can now accurately determine incorrect details, as the SAC returns a well parsable error message! Neat!
+    // What IS interesting is that we can now accurately determine login errors, as the SAC returns a plaintext error message using this method!
 
     logger.info(`${username} - Beginning login`)
 

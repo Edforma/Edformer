@@ -12,7 +12,9 @@ const { CookieJar } = require('tough-cookie')
 
 // Utility stuff for other functions
 const authCookie = async function (accessToken) {
+    // Obtain the session token's document.
     let authDoc = await db.get("session-" + accessToken)
+    // Return the cookie data stored inside the document.
     return authDoc.cookieData.name + '=' + authDoc.cookieData.token
 }
 
@@ -29,7 +31,9 @@ const loginSSO = async (username, password, res) => {
 
     const jar = new CookieJar()
     const axiosTc = wrapper(axios.create({ jar }))
-    // Assemble data string. The SAC needs this, as it expects a bunch of Enboard parameters. It *is* meant to be used from Enboard...
+
+    // Assemble parameters; I'm unsure if we exactly *need* the __EVENT... or __ASYNCPOST parameters or not; I'm keeping them here as it's what
+    // CL sends, and we want to replicate the login flows for CL as close as possible to ensure everything works right.
     let dataToSend = new url.URLSearchParams({
         __EVENTTARGET: 'submitX',
         __EVENTARGUMENT: '',

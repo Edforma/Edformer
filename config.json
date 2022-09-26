@@ -4,5 +4,8 @@
     "network": {
         "ngrokEnabled": false,
         "openWebUI": false
+    },
+    "debugging": {
+        "sentryDsn": "https://5289a117dcb6445d98f31a916c14c4fa@o1069103.ingest.sentry.io/6065463"
     }
 }

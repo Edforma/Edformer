@@ -12,15 +12,24 @@ Edformer replicates this flow in a server environment and grabs the authenticate
 
 ## How do I use it?
 
-Clone this repo: `git clone https://github.com/Edforma/Edformer.git`.
-
-Run `yarn install` to download all of the required dependencies.
-
-Modify `config.json` to your needs.
-
-Finally, run `node index.js`. If you are running Edformer in this directory for the first time, two directorys will be made: `data` for database storage, and `logs` for log files.
-
-
+- Clone this repo: `git clone https://github.com/Edforma/Edformer.git`.
+- Run `yarn install` to download all of the required dependencies.
+- Modify `config.json` to your needs (here is an example configuration)
+```
+{
+    "port": 3000,
+    "announcement": "",
+    "network": {
+        "ngrokEnabled": false,
+        "openWebUI": false
+    },
+    "debugging": {
+        "sentryDsn": "https://5289a117dcb6445d98f31a916c14c4fa@o1069103.ingest.sentry.io/6065463",
+        "sentryTraceSamplingRate": 0.5
+    }
+}
+```
+- Finally, run `node index.js`. If you are running Edformer in this directory for the first time, two directorys will be made: `data` for database storage, and `logs` for log files.
 ## Troubleshooting/Questions
 
 ### How do I make Edformer accessible from outside networks?

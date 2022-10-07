@@ -8,6 +8,7 @@
   },
   "author": "Griffin Bauer",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "@sentry/node": "^6.17.9",
     "@sentry/tracing": "^6.17.9",

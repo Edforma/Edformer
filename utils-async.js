@@ -1,21 +1,21 @@
-const axios = require('axios').default // Sending requests
-const cheerio = require('cheerio');
-const xpath = require('xpath-html');
-const { randomUUID } = require("crypto");
-const PouchDB = require('pouchdb')
+import { fromNode, fromPageSource } from 'xpath-html';
+
+import { CookieJar } from 'tough-cookie';
+import PouchDB from 'pouchdb';
+import { URLSearchParams } from 'url';
+import axios from 'axios'; // Sending requests
+import { load } from 'cheerio';
+import { randomUUID } from "crypto";
+import winston from 'winston'
+import { wrapper } from 'axios-cookiejar-support';
+
 const db = new PouchDB('data')
-const logger = require('winston');
-const url = require('url')
-
-const { wrapper } = require('axios-cookiejar-support')
-const { CookieJar } = require('tough-cookie')
-
 // Utility stuff for other functions
-const authCookie = async function (accessToken) {
+const authCookie = async (accessToken) => {
     // Obtain the session token's document.
-    let authDoc = await db.get("session-" + accessToken)
+    let authDoc = await db.get("session-" + accessToken);
     // Return the cookie data stored inside the document.
-    return authDoc.cookieData.name + '=' + authDoc.cookieData.token
+    return authDoc.cookieData.name + '=' + authDoc.cookieData.token;
 }
 
 // Functions called directly by api
@@ -27,14 +27,14 @@ const login = async (username, password, res) => {
     // When we send the request, we'll be getting back the SAC home page due to the redirect it gives. Not needed, but interesting.
     // What IS interesting is that we can now accurately determine login errors, as the SAC returns a plaintext error message using this method!
 
-    logger.info(`${username} - Beginning login`)
+    winston.info(`${username} - Beginning login`)
 
     const jar = new CookieJar()
     const axiosTc = wrapper(axios.create({ jar }))
 
     // Assemble parameters; I'm unsure if we exactly *need* the __EVENT... or __ASYNCPOST parameters or not; I'm keeping them here as it's what
     // CL sends, and we want to replicate the login flows for CL as close as possible to ensure everything works right.
-    let dataToSend = new url.URLSearchParams({
+    let dataToSend = new URLSearchParams({
         __EVENTTARGET: 'submitX',
         __EVENTARGUMENT: '',
         stuuser: username,
@@ -66,11 +66,11 @@ const login = async (username, password, res) => {
             cookieData: { name: cookieInfo.key, token: cookieInfo.value }
         }
         db.put(sessionDoc).catch((e) => {
-            return logger.error(`${username} - Failed to put session doc. ${e}`)
+            return winston.error(`${username} - Failed to put session doc. ${e}`)
         })
-        logger.info(`${username} - Created session UUID: ${sessionDoc._id} for cookie ${cookieInfo}`)
+        winston.info(`${username} - Created session UUID: ${sessionDoc._id} for cookie ${cookieInfo}`)
         res.send({ status: "success", accessToken: accessToken });
-        logger.info(`${username} - Responded with session!`)
+        winston.info(`${username} - Responded with session!`)
     })
 }
 const getStudentData = async (accessToken, res) => {
@@ -91,7 +91,7 @@ const getStudentData = async (accessToken, res) => {
         return;
     }
 
-    const $ = cheerio.load(studentInfoPage.data);
+    const $ = load(studentInfoPage.data);
 
     // Assemble our response form, by grabbing all of the data.
     const responseData = {
@@ -163,7 +163,7 @@ const getGrades = async (accessToken, res) => {
     function parseTable(tBodyNode, parsedData) {
 
         console.log("numberOfChildNodes", tBodyNode.childNodes.length);
-        console.log("numberOfTrs", xpath.fromNode(tBodyNode).findElements("/tr").length);
+        console.log("numberOfTrs", fromNode(tBodyNode).findElements("/tr").length);
 
         for (const trNode in tBodyNode.childNodes) {
             if (Object.hasOwnProperty.call(tBodyNode.childNodes, trNode)) {
@@ -178,14 +178,14 @@ const getGrades = async (accessToken, res) => {
                 .reduce((accTableData, rowNode, i) => {
                     if (rowNode.getAttribute("class") === 'trc') {
 
-                        var headers = xpath.fromNode(rowNode)
+                        var headers = fromNode(rowNode)
                             .findElements("/td")
                             .map(tdNode => ({ element: tdNode, textContent: tdNode.textContent }));
 
                         accTableData.headers.push(headers);
 
                     } else {
-                        var values = xpath.fromNode(rowNode)
+                        var values = fromNode(rowNode)
                             .findElements("/td")
                             .reduce((accValue, tdNode, i, allTds) => {
 
@@ -226,7 +226,7 @@ const getGrades = async (accessToken, res) => {
 
     function parseCheerioTable($, tBodyNode, parsedData) {
         console.log("numberOfChildNodes", tBodyNode.childNodes.length);
-        console.log("numberOfTrs", xpath.fromNode(tBodyNode).findElements("/tr").length);
+        console.log("numberOfTrs", fromNode(tBodyNode).findElements("/tr").length);
 
         if (tBodyNode.childNodes.length === 2) {
             // This is a stupid nested table thing
@@ -283,15 +283,14 @@ const getGrades = async (accessToken, res) => {
         return tableData;
     }
 
-    const $ = cheerio.load(page.data);
+    const $ = load(page.data);
     // const tables = $("center > table > tbody").map((i, el) => parseCheerioTable($, el));
     // console.log("table data", tables)
 
-    const classAssignments = xpath
-        .fromPageSource(page.data) // Select current page as source
+    const classAssignments = fromPageSource(page.data) // Select current page as source
         .findElements("//center/table/tbody/tr/td/font/strong") // Find assignments table
         .map(classAssignmentTableTitleNode => {
-            var tableNodeXPath = xpath.fromNode(
+            var tableNodeXPath = fromNode(
                 classAssignmentTableTitleNode.parentNode.parentNode.parentNode.parentNode.parentNode
             );
 
@@ -319,9 +318,8 @@ const getGrades = async (accessToken, res) => {
             return { ...acc, [assignments.course]: assignments }
         }, {});
 
-    const classAverages = xpath
-        .fromNode(
-            xpath.fromPageSource(page.data).findElement("//font[contains(text(), 'Class Averages')]")
+    const classAverages = fromNode(
+            fromPageSource(page.data).findElement("//font[contains(text(), 'Class Averages')]")
                 .parentNode.parentNode.parentNode.parentNode.parentNode
         )
         .findElements('//tr[@bgcolor]')
@@ -380,7 +378,11 @@ const logout = async (accessToken, res) => {
 
 }
 
-exports.login = login;
-exports.getStudentData = getStudentData;
-exports.getGrades = getGrades;
-exports.logout = logout;
+const _login = login;
+export { _login as login };
+const _getStudentData = getStudentData;
+export { _getStudentData as getStudentData };
+const _getGrades = getGrades;
+export { _getGrades as getGrades };
+const _logout = logout;
+export { _logout as logout };

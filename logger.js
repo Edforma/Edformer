@@ -1,5 +1,4 @@
-const winston = require('winston');
-
+import winston from 'winston'
 
 winston.add(new winston.transports.File({ filename: `./logs/${new Date().toISOString()}.log` })) // Log to a file
 
@@ -19,4 +18,4 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
-module.exports = winston;
+export default winston;

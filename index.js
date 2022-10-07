@@ -126,7 +126,9 @@ app.listen(config.port, async () => {
                     description: "Get information on the database",
                     action: async () => {
                         await db.info().then((info) => {
-                            winston.info(info)
+                            winston.info(`Database name: ${info.db_name}`)
+                            winston.info(`Database adapter: ${info.adapter}`)
+                            winston.info(`Number of stored tokens: ${info.doc_count}`);
                         })
                     }
                 },

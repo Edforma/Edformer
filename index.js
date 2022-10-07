@@ -7,8 +7,10 @@ import { Integrations as _Integrations } from "@sentry/tracing"
 import express from 'express' // expressJS
 import './logger.js' // Set up default logger
 import winston from 'winston'
+import PouchDB from 'pouchdb';
 
 const app = express() // Initialize express app
+const db = new PouchDB('data')
 
 // Initialize sentry
 winston.info('Initializing Sentry...')
@@ -114,8 +116,44 @@ app.use(function onError(err, req, res, next) {
 app.listen(config.port, async () => {
     winston.info(`Edformer has started. Entering console...`)
     // Begin CLI initilization
+    // I want to eventually move the commands to another place, but this works for now.
     const cli = new CLI()
         .setDelimiter('edformer> ')
+        .addCommand("database", {
+            description: "Run operations with the token database",
+            subcommands: {
+                info : {
+                    description: "Get information on the database",
+                    action: async () => {
+                        await db.info().then((info) => {
+                            winston.info(info)
+                        })
+                    }
+                },
+                cookie: {
+                    description: "Get the raw ASP Session cookie of a token",
+                    parameters: ['token'],
+                    action: async (params) => {
+                        let authDoc = await db.get("session-" + params.token);
+                        return winston.info(authDoc.cookieData.name + '=' + authDoc.cookieData.token)
+                    }   
+                },
+                wipeall: {
+                    description: "Delete all tokens stored in PouchDB",
+                    options: [{ label: "seriously", description: "You seriously want to do this"}],
+                    action: async (params, options) => {
+                        if(!options.seriously) {
+                            winston.error('This command wipes all tokens from PouchDB, invalidating all sessions linked to this instance of Edformer.')
+                            winston.error('If you really want to do this, pass the @seriously option.')
+                        } else {
+                            winston.error('If you say so. Wiping all documents in PouchDB...')
+                            db.destroy()
+                            winston.error('Finished.')
+                        }
+                    }
+                }
+            }
+        })
         .addCommand("exit", {
             description: "Exits Edformer.",
             action: () => {

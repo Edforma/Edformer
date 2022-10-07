@@ -19,7 +19,7 @@ const authCookie = async function (accessToken) {
 }
 
 // Functions called directly by api
-const loginSSO = async (username, password, res) => {
+const login = async (username, password, res) => {
     // This function is used to log into the Student Access Center page.
     // THis used to use Selenium, and a fake browser in order to obtain the cookie.
     // We now utilize the sso.asp endpoint, used by Enboard (SSO) to log into the SAC.
@@ -365,7 +365,7 @@ const getGrades = async (accessToken, res) => {
 }
 
 
-const destroySACSession = async (accessToken, res) => {
+const logout = async (accessToken, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
 
     // Create a logout request.
@@ -380,7 +380,7 @@ const destroySACSession = async (accessToken, res) => {
 
 }
 
-exports.loginSSO = loginSSO;
+exports.login = login;
 exports.getStudentData = getStudentData;
 exports.getGrades = getGrades;
-exports.destroySACSession = destroySACSession;
+exports.logout = logout;

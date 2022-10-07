@@ -1,17 +1,20 @@
 const express = require('express') // expressJS
 const app = express() // Initialize express app
-
 const utils = require('./utils-async') // Utilitys/API functions
 const config = require('./config.json') // Load configuration data
 const logger = require('./logger') // Set up default logger
 const winston = require('winston')
-const ngrok = require('ngrok');
-const open = require('open');
-
 const Sentry = require('@sentry/node');
 const Tracing = require("@sentry/tracing");
+const { CLI } = require("cliffy")
+const art = require("ascii-art")
 
+let coolTitle = art.font("Some Text", 'doom', (err, rendered)=>{
+    return rendered;
+});
+console.log(coolTitle)
 // Initialize sentry
+winston.info('Initializing Sentry...')
 Sentry.init({
     dsn: config.sentryDsn,
     integrations: [
@@ -22,21 +25,14 @@ Sentry.init({
     ],
     tracesSampleRate: config.sentryTraceSamplingRate,
 })
-// Add sentry middleware
+// Add some sentry middleware
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
 
-// Temporary
-app.get('/', (req, res) => {
-    res.status(410).send({
-        status: "arbitrary_impositon",
-        error: `Cleverly done, ${req.ip} but you're not supposed to be here. As a matter of fact, you're not. Get back where you belong, and forget about all this, until we meet again.`
-    })
-})
-
 // API endpoints
-app.post('/session/login', (req, res) => {
+winston.info('Declaring API routes...')
+app.post('/auth/login', (req, res) => {
 
     // Check to make sure a username and password is present. If either one is missing, return with an error.
     if (!req.headers.username) {
@@ -55,8 +51,7 @@ app.post('/session/login', (req, res) => {
     utils.loginSSO(req.headers.username, req.headers.password, res);
 
 })
-
-app.get('/user/getDetails', (req, res) => {
+app.get('/student/getDetails', (req, res) => {
 
     if (!req.headers.accesstoken) {
         res.status(400).send({
@@ -66,8 +61,7 @@ app.get('/user/getDetails', (req, res) => {
         return;
     } else utils.getStudentData(req.headers.accesstoken, res);
 })
-
-app.get('/user/getGrades', (req, res) => {
+app.get('/student/getGrades', (req, res) => {
 
     if (!req.headers.accesstoken) {
         res.status(400).send({
@@ -77,8 +71,7 @@ app.get('/user/getGrades', (req, res) => {
         return;
     } else utils.getGrades(req.headers.accesstoken, res);
 })
-
-app.get('/user/getSchedule', (req, res) => {
+app.get('/student/getSchedule', (req, res) => {
 
     if (!req.headers.accesstoken) {
         res.status(400).send({
@@ -88,8 +81,7 @@ app.get('/user/getSchedule', (req, res) => {
         return;
     } else utils.getSchedule(req.headers.accesstoken, res);
 })
-
-app.post('/session/destroySession', (req, res) => {
+app.post('/student/logout', (req, res) => {
 
     // Check for a session ID. If we don't have one, stop.
     if (!req.headers.accesstoken) {
@@ -101,7 +93,6 @@ app.post('/session/destroySession', (req, res) => {
     } else utils.destroySACSession(req.headers.accesstoken, res);
 
 })
-
 app.get('/server/ping', (req, res) => {
     res.send({
         status: 'success',
@@ -112,10 +103,9 @@ app.get('/server/ping', (req, res) => {
     });
 })
 
-// Add error handling middleware
+// Sentry middleware
+winston.info('Finishing up...')
 app.use(Sentry.Handlers.errorHandler());
-
-// onError middleware
 app.use(function onError(err, req, res, next) {
     logger.error(err.stack)
     res.status(500).send({
@@ -126,29 +116,16 @@ app.use(function onError(err, req, res, next) {
 
 // Listen on whatever port is selected
 app.listen(config.port, async () => {
-    winston.info(`Edformer now listening on port ${config.port}.`)
-    if (config.announcement) {
-        winston.info(`Announcement found: "${config.announcement}"`)
-    }
-    if (config.network.ngrokEnabled === true) {
-        logger.info('Ngrok is enabled in config, opening...')
-        let grktunnel = await ngrok.connect(addrconfig.port)
-        logger.info(`Ngrok tunnel opened at ${grktunnel}`)
-        if (config.network.openWebUI === true) {
-            open('http://localhost:4040')
-        }
-    }
-})
-
-process.on('SIGINT', async function() {
-    logger.info(`Shutting down Edformer.`)
-    if (config.network.ngrokEnabled === true) {
-        logger.info('Closing NGROK tunnel.')
-        await ngrok.disconnect().then((a) => {
-            logger.info(`Closed ngrok tunnel: ${a}`)
-        }).catch((e) => {
-            logger.error(`Failed to gracefully close NGROK tunnel!`)
+    winston.info(`Welcome to Edformer - Entering console`)
+    // Begin CLI initilization
+    const cli = new CLI()
+        .setDelimiter('edformer> ')
+        .addCommand("exit", {
+            description: "Exits Edformer.",
+            action: () => {
+                winston.info('Closing sessions, please wait...')
+                process.exit();
+            },
         })
-    }
-    process.exit();
-});
+        .show();
+})

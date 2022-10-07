@@ -1,6 +1,6 @@
 import { Handlers, Integrations, init } from '@sentry/node'
 import config from './config.json' assert {type: 'json'}; // Load configuration data
-import {getGrades, getStudentData, login, logout} from './utils-async.js' // Utilitys/API functions
+import {getGrades, getStudentData, getSched, login, logout} from './utils-async.js' // Utilitys/API functions
 
 import { CLI } from "cliffy"
 import { Integrations as _Integrations } from "@sentry/tracing"
@@ -67,7 +67,7 @@ app.get('/student/getGrades', (req, res) => {
         return;
     } else getGrades(req.headers.accesstoken, res);
 })
-app.get('/student/getSchedule', (req, res) => {
+app.get('/student/getSched', (req, res) => {
 
     if (!req.headers.accesstoken) {
         res.status(400).send({
@@ -75,7 +75,7 @@ app.get('/student/getSchedule', (req, res) => {
             error: "accessToken missing."
         });
         return;
-    } else getSchedule(req.headers.accesstoken, res);
+    } else getSched(req.headers.accesstoken, res);
 })
 app.post('/auth/logout', (req, res) => {
 

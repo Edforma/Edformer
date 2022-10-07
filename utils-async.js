@@ -4,7 +4,7 @@ import { CookieJar } from 'tough-cookie';
 import PouchDB from 'pouchdb';
 import { URLSearchParams } from 'url';
 import axios from 'axios'; // Sending requests
-import { load } from 'cheerio';
+import { load as cheerioLoad } from 'cheerio';
 import { randomUUID } from "crypto";
 import winston from 'winston'
 import { wrapper } from 'axios-cookiejar-support';
@@ -91,7 +91,7 @@ const getStudentData = async (accessToken, res) => {
         return;
     }
 
-    const $ = load(studentInfoPage.data);
+    const $ = cheerioLoad(studentInfoPage.data);
 
     // Assemble our response form, by grabbing all of the data.
     const responseData = {
@@ -160,132 +160,7 @@ const getGrades = async (accessToken, res) => {
         return;
     }
 
-    function parseTable(tBodyNode, parsedData) {
-
-        console.log("numberOfChildNodes", tBodyNode.childNodes.length);
-        console.log("numberOfTrs", fromNode(tBodyNode).findElements("/tr").length);
-
-        for (const trNode in tBodyNode.childNodes) {
-            if (Object.hasOwnProperty.call(tBodyNode.childNodes, trNode)) {
-                const element = tBodyNode.childNodes[trNode];
-                console.log(element);
-            }
-
-        }
-
-        var tableData = //[...xpath.fromNode(tBodyNode).findElements("/tr")]
-            [...tBodyNode.childNodes]
-                .reduce((accTableData, rowNode, i) => {
-                    if (rowNode.getAttribute("class") === 'trc') {
-
-                        var headers = fromNode(rowNode)
-                            .findElements("/td")
-                            .map(tdNode => ({ element: tdNode, textContent: tdNode.textContent }));
-
-                        accTableData.headers.push(headers);
-
-                    } else {
-                        var values = fromNode(rowNode)
-                            .findElements("/td")
-                            .reduce((accValue, tdNode, i, allTds) => {
-
-                                var fields = accTableData.headers[accTableData.headers.length - 1];
-
-                                if (fields.length != allTds.length) {
-                                    console.log("Failed to process row - field count mismatch", tdNode);
-                                    return accValue;
-                                }
-
-                                var fieldName = fields[i].textContent;
-
-                                accValue[fieldName] = {
-                                    element: tdNode,
-                                    textContent: tdNode.textContent
-                                }
-
-                                return accValue;
-                            }, {});
-
-                        accTableData.rows.push(values);
-                    }
-                    return accTableData;
-                },
-                    {
-                        headers: [],
-                        rows: [],
-                        subTables: []
-                    });
-
-        return tableData;
-    }
-
-    // const tables = xpath
-    //     .fromPageSource(page.data)
-    //     .findElements("//center/table/tbody")
-    //     .map(tableNode => parseTable(tableNode));
-
-    function parseCheerioTable($, tBodyNode, parsedData) {
-        console.log("numberOfChildNodes", tBodyNode.childNodes.length);
-        console.log("numberOfTrs", fromNode(tBodyNode).findElements("/tr").length);
-
-        if (tBodyNode.childNodes.length === 2) {
-            // This is a stupid nested table thing
-            const nestedTableBody = $(tBodyNode).find("> tr > td > table > tbody");
-            if (nestedTableBody?.length === 1) {
-                return parseCheerioTable($, nestedTableBody, parsedData);
-            } else {
-                return null;
-            }
-
-        }
-
-        var tableData = [...tBodyNode.childNodes]
-            .reduce((accTableData, rowNode, i) => {
-                if (rowNode.attribs?.class === 'trc') {
-
-                    var headers = $(rowNode)
-                        .find("> td")
-                        .map((i, tdNode) => ({ element: tdNode, text: $(tdNode).text() }));
-
-                    accTableData.headers.push(headers);
-
-                } else {
-                    var values = [...$(rowNode).find("> td")]
-                        .reduce((accValue, tdNode, i, allTds) => {
-
-                            var fields = accTableData.headers[accTableData.headers.length - 1];
-
-                            if (fields.length != allTds.length) {
-                                console.log("Failed to process row - field count mismatch", tdNode);
-                                return accValue;
-                            }
-
-                            var fieldName = fields[i].text;
-
-                            accValue[fieldName] = {
-                                element: tdNode,
-                                text: $(tdNode).text()
-                            }
-
-                            return accValue;
-                        }, {});
-
-                    accTableData.rows.push(values);
-                }
-                return accTableData;
-            },
-                {
-                    headers: [],
-                    rows: [],
-                    subTables: []
-                });
-
-        return tableData;
-    }
-
-    const $ = load(page.data);
-    // const tables = $("center > table > tbody").map((i, el) => parseCheerioTable($, el));
-    // console.log("table data", tables)
+    const $ = cheerioLoad(page.data);
 
     const classAssignments = fromPageSource(page.data) // Select current page as source
         .findElements("//center/table/tbody/tr/td/font/strong") // Find assignments table
@@ -336,23 +211,7 @@ const getGrades = async (accessToken, res) => {
                 assignments: classAssignments[course].assignments
             }
         });
-
-    // const classAssignments = classAverages
-    //     .map(classAvg => {
-    //         return xpath
-    //             .fromNode(
-    //                 xpath.fromPageSource(page.data).findElement("//table/*/strong[contains(text(), '" + classAvg.course + "')]")
-    //                     .parentNode.parentNode.parentNode.parentNode.parentNode
-    //             )
-    //             .map(trNode => {
-    //                 return {
-    //                     dueDate: trNode.childNodes[0].textContent.trim(),
-    //                     assignedDate: trNode.childNodes[1].textContent.trim(),
-    //                     title: trNode.childNodes[2].textContent.trim(),
-    //                 }
-    //             });
-    //     })
-
+        
     // Assemble our response form, by grabbing all of the data.
     const responseData = {
         status: "success",
@@ -361,8 +220,14 @@ const getGrades = async (accessToken, res) => {
 
     res.send(responseData);
 }
-
-
+const getSched = async (accessToken, res) => {
+    let page = await axios.get('https://pac.conroeisd.net/sched.asp', {
+        headers: {
+            'cookie': await authCookie(accessToken)
+        }
+    });
+    console.log(page.data)
+}
 const logout = async (accessToken, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
 
@@ -384,5 +249,7 @@ const _getStudentData = getStudentData;
 export { _getStudentData as getStudentData };
 const _getGrades = getGrades;
 export { _getGrades as getGrades };
+const _getSched = getSched;
+export { _getSched as getSched }
 const _logout = logout;
 export { _logout as logout };

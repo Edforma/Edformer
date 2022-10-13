@@ -10,16 +10,24 @@ import winston from 'winston'
 import { wrapper } from 'axios-cookiejar-support';
 
 const db = new PouchDB('data')
-// Utility stuff for other functions
-const authCookie = async (accessToken) => {
+
+/**
+ * Obtains the raw cookie data that belongs to an access token.
+ * @param {string} token A valid Edformer access token.
+ * @returns {string} The ASPSESSION cookie string.
+ */
+const _authCookie = async (accessToken) => {
     // Obtain the session token's document.
     let authDoc = await db.get("session-" + accessToken);
     // Return the cookie data stored inside the document.
     return authDoc.cookieData.name + '=' + authDoc.cookieData.token;
 }
-
-// Functions called directly by api
-const login = async (username, password, res) => {
+/**
+ * Obtains the raw cookie data that belongs to an access token.
+ * @param {string} token A valid Edformer access token.
+ * @returns {string} The ASPSESSION cookie string.
+ */
+const login = async (usr, psw, res) => {
     // This function is used to log into the Student Access Center page.
     // THis used to use Selenium, and a fake browser in order to obtain the cookie.
     // We now utilize the sso.asp endpoint, used by Enboard (SSO) to log into the SAC.
@@ -27,7 +35,7 @@ const login = async (username, password, res) => {
     // When we send the request, we'll be getting back the SAC home page due to the redirect it gives. Not needed, but interesting.
     // What IS interesting is that we can now accurately determine login errors, as the SAC returns a plaintext error message using this method!
 
-    winston.info(`${username} - Beginning login`)
+    winston.info(`${usr} - Beginning login`)
 
     const jar = new CookieJar()
     const axiosTc = wrapper(axios.create({ jar }))
@@ -37,8 +45,8 @@ const login = async (username, password, res) => {
     let dataToSend = new URLSearchParams({
         __EVENTTARGET: 'submitX',
         __EVENTARGUMENT: '',
-        stuuser: username,
-        password: password,
+        stuuser: usr,
+        password: psw,
         __ASYNCPOST: false,
     })
 
@@ -66,20 +74,25 @@ const login = async (username, password, res) => {
             cookieData: { name: cookieInfo.key, token: cookieInfo.value }
         }
         db.put(sessionDoc).catch((e) => {
-            return winston.error(`${username} - Failed to put session doc. ${e}`)
+            return winston.error(`${usr} - Failed to put session doc. ${e}`)
         })
-        winston.info(`${username} - Created session UUID: ${sessionDoc._id} for cookie ${cookieInfo}`)
+        winston.info(`${usr} - Created session UUID: ${sessionDoc._id} for cookie ${cookieInfo}`)
         res.send({ status: "success", accessToken: accessToken });
-        winston.info(`${username} - Responded with session!`)
     })
 }
-const getStudentData = async (accessToken, res) => {
+
+/**
+ * Fetches a student's information (registration, attendence, transport, etc)
+ * @param {string} token A valid Edformer access token.
+ * @returns {object} An object containing the student's information.
+ */
+const getStudentData = async (token, res) => {
     // This function will use a given session ID to contact the SAC page, and to
     // get some basic user data. Triggered by /user/getDetails.
 
     let studentInfoPage = await axios.get('https://pac.conroeisd.net/student.asp', {
         headers: {
-            'cookie': await authCookie(accessToken)
+            'cookie': await authCookie(token)
         }
     });
 
@@ -128,10 +141,16 @@ const getStudentData = async (accessToken, res) => {
     }
     res.send(responseData);
 }
-const getGrades = async (accessToken, res) => {
+
+/**
+ * Fetches a student's courses, along with all assignments in each course.
+ * @param {string} token A valid Edformer access token.
+ * @returns {object} An object containing the student's course information/assignments.
+ */
+const getGrades = async (token, res) => {
     let page = await axios.get('https://pac.conroeisd.net/assignments.asp', {
         headers: {
-            'cookie': await authCookie(accessToken)
+            'cookie': await authCookie(token)
         }
     });
 
@@ -220,21 +239,19 @@ const getGrades = async (accessToken, res) => {
 
     res.send(responseData);
 }
-const getSched = async (accessToken, res) => {
-    let page = await axios.get('https://pac.conroeisd.net/sched.asp', {
-        headers: {
-            'cookie': await authCookie(accessToken)
-        }
-    });
-    console.log(page.data)
-}
-const logout = async (accessToken, res) => {
+
+/**
+ * Logs a student out. This will be reflected in the database AND Conroe ISD's servers.
+ * @param {string} token A valid Edformer access token.
+ * @returns {object} An object containing the student's course information/assignments.
+ */
+const logout = async (token, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.
 
     // Create a logout request.
     await axios.get('https://pac.conroeisd.net/logout.asp', {
         headers: {
-            'cookie': await authCookie(accessToken)
+            'cookie': await authCookie(token)
         }
     });
     res.send({
@@ -243,13 +260,7 @@ const logout = async (accessToken, res) => {
 
 }
 
-const _login = login;
-export { _login as login };
-const _getStudentData = getStudentData;
-export { _getStudentData as getStudentData };
-const _getGrades = getGrades;
-export { _getGrades as getGrades };
-const _getSched = getSched;
-export { _getSched as getSched }
-const _logout = logout;
-export { _logout as logout };
+export { login };
+export { getStudentData };
+export { getGrades };
+export { logout };

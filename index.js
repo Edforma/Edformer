@@ -1,10 +1,10 @@
 import { Handlers, Integrations, init } from '@sentry/node'
 import config from './config.json' assert {type: 'json'}; // Load configuration data
-import { getGrades, getStudentData, getSched, login, logout } from './utils-async.js' // Utilitys/API functions
+import { getGrades, getStudentData, login, logout } from './components/utils.js' // Utilitys/API functions
 
 import { CLI } from "cliffy"
 import { Integrations as _Integrations } from "@sentry/tracing"
-import express, { application } from 'express' // expressJS
+import express from 'express' // expressJS
 import './logger.js' // Set up default logger
 import winston from 'winston'
 import PouchDB from 'pouchdb';

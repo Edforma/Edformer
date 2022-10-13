@@ -92,7 +92,7 @@ const getStudentData = async (token, res) => {
 
     let studentInfoPage = await axios.get('https://pac.conroeisd.net/student.asp', {
         headers: {
-            'cookie': await authCookie(token)
+            'cookie': await _authCookie(token)
         }
     });
 
@@ -150,7 +150,7 @@ const getStudentData = async (token, res) => {
 const getGrades = async (token, res) => {
     let page = await axios.get('https://pac.conroeisd.net/assignments.asp', {
         headers: {
-            'cookie': await authCookie(token)
+            'cookie': await _authCookie(token)
         }
     });
 
@@ -251,7 +251,7 @@ const logout = async (token, res) => {
     // Create a logout request.
     await axios.get('https://pac.conroeisd.net/logout.asp', {
         headers: {
-            'cookie': await authCookie(token)
+            'cookie': await _authCookie(token)
         }
     });
     res.send({

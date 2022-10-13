@@ -5,7 +5,7 @@ import { getGrades, getStudentData, login, logout } from './components/utils.js'
 import { CLI } from "cliffy"
 import { Integrations as _Integrations } from "@sentry/tracing"
 import express from 'express' // expressJS
-import './logger.js' // Set up default logger
+import './components/logger.js' // Set up default logger
 import winston from 'winston'
 import PouchDB from 'pouchdb';
 

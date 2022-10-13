@@ -22,11 +22,11 @@ const _authCookie = async (accessToken) => {
     // Return the cookie data stored inside the document.
     return authDoc.cookieData.name + '=' + authDoc.cookieData.token;
 }
+
 /**
  * Authenticate a student with the Conroe ISD servers. 
  * @param {string} usr Username of an Student Access Center account.
  * @param {string} psw Password of an Student Access Center account.
- * @returns {string} The created access token.
  */
 const login = async (usr, psw, res) => {
     winston.info(`${usr} - Beginning login`)
@@ -71,7 +71,6 @@ const login = async (usr, psw, res) => {
 /**
  * Fetches a student's information (registration, attendence, transport, etc)
  * @param {string} token A valid Edformer access token.
- * @returns {object} An object containing the student's information.
  */
 const getStudentData = async (token, res) => {
     // This function will use a given session ID to contact the SAC page, and to
@@ -132,7 +131,6 @@ const getStudentData = async (token, res) => {
 /**
  * Fetches a student's courses, along with all assignments in each course.
  * @param {string} token A valid Edformer access token.
- * @returns {object} An object containing the student's course information/assignments.
  */
 const getGrades = async (token, res) => {
     let page = await axios.get('https://pac.conroeisd.net/assignments.asp', {
@@ -230,7 +228,6 @@ const getGrades = async (token, res) => {
 /**
  * Logs a student out. This will be reflected in the database AND Conroe ISD's servers.
  * @param {string} token A valid Edformer access token.
- * @returns {object} An object containing the student's course information/assignments.
  */
 const logout = async (token, res) => {
     // The purpose of this function is to end a session, once it's fufilled it's purpose.

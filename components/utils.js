@@ -23,18 +23,12 @@ const _authCookie = async (accessToken) => {
     return authDoc.cookieData.name + '=' + authDoc.cookieData.token;
 }
 /**
- * Obtains the raw cookie data that belongs to an access token.
- * @param {string} token A valid Edformer access token.
- * @returns {string} The ASPSESSION cookie string.
+ * Authenticate a student with the Conroe ISD servers. 
+ * @param {string} usr Username of an Student Access Center account.
+ * @param {string} psw Password of an Student Access Center account.
+ * @returns {string} The created access token.
  */
 const login = async (usr, psw, res) => {
-    // This function is used to log into the Student Access Center page.
-    // THis used to use Selenium, and a fake browser in order to obtain the cookie.
-    // We now utilize the sso.asp endpoint, used by Enboard (SSO) to log into the SAC.
-    // It is MUCH faster (~6 seconds faster), and MUCH less resource intensive (no need for chrome to open).
-    // When we send the request, we'll be getting back the SAC home page due to the redirect it gives. Not needed, but interesting.
-    // What IS interesting is that we can now accurately determine login errors, as the SAC returns a plaintext error message using this method!
-
     winston.info(`${usr} - Beginning login`)
 
     const jar = new CookieJar()
@@ -43,14 +37,9 @@ const login = async (usr, psw, res) => {
     // Assemble parameters; I'm unsure if we exactly *need* the __EVENT... or __ASYNCPOST parameters or not; I'm keeping them here as it's what
     // CL sends, and we want to replicate the login flows for CL as close as possible to ensure everything works right.
     let dataToSend = new URLSearchParams({
-        __EVENTTARGET: 'submitX',
-        __EVENTARGUMENT: '',
         stuuser: usr,
-        password: psw,
-        __ASYNCPOST: false,
+        password: psw
     })
-
-    // `__EVENTTARGET=submitX&__EVENTARGUMENT=&stuuser=${username}&password=${password}&__ASYNCPOST=false`
 
     await axiosTc.post('https://pac.conroeisd.net/sso.asp?u=1', dataToSend.toString(), {
         headers: {
@@ -69,14 +58,12 @@ const login = async (usr, psw, res) => {
         let cookieInfo = jar.toJSON().cookies[0]
         let accessToken = randomUUID()
 
-        var sessionDoc = {
+        db.put({
             "_id": "session-" + accessToken,
             cookieData: { name: cookieInfo.key, token: cookieInfo.value }
-        }
-        db.put(sessionDoc).catch((e) => {
+        }).catch((e) => {
             return winston.error(`${usr} - Failed to put session doc. ${e}`)
         })
-        winston.info(`${usr} - Created session UUID: ${sessionDoc._id} for cookie ${cookieInfo}`)
         res.send({ status: "success", accessToken: accessToken });
     })
 }
@@ -213,9 +200,9 @@ const getGrades = async (token, res) => {
         }, {});
 
     const classAverages = fromNode(
-            fromPageSource(page.data).findElement("//font[contains(text(), 'Class Averages')]")
-                .parentNode.parentNode.parentNode.parentNode.parentNode
-        )
+        fromPageSource(page.data).findElement("//font[contains(text(), 'Class Averages')]")
+            .parentNode.parentNode.parentNode.parentNode.parentNode
+    )
         .findElements('//tr[@bgcolor]')
         .map(trNode => {
             var course = trNode.childNodes[2].textContent.trim();
@@ -230,7 +217,7 @@ const getGrades = async (token, res) => {
                 assignments: classAssignments[course].assignments
             }
         });
-        
+
     // Assemble our response form, by grabbing all of the data.
     const responseData = {
         status: "success",

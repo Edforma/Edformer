@@ -17,15 +17,11 @@
     "cheerio": "^1.0.0-rc.10",
     "cliffy": "^2.5.1",
     "express": "^4.17.3",
-    "ngrok": "^4.3.0",
-    "open": "^8.4.0",
     "pouchdb": "^7.2.2",
     "tough-cookie": "^4.0.0",
     "winston": "^3.6.0",
     "xmldom": "^0.6.0",
     "xpath-html": "^1.0.3"
   },
-  "devDependencies": {
-    "nodemon": "..."
-  }
+  "devDependencies": {}
 }

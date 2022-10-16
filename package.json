@@ -1,7 +1,7 @@
 {
   "name": "edformer",
   "version": "1.0.0",
-  "description": "A REST API for Conroe ISD's SSO system, using Selenium",
+  "description": "Edformer's REST API, allowing for interacting with Conroe ISD's Student Access Center",
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js"

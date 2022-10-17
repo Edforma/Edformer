@@ -164,8 +164,6 @@ const getGrades = async (token, res) => {
         return;
     }
 
-    const $ = cheerioLoad(page.data);
-
     const classAssignments = fromPageSource(page.data) // Select current page as source
         .findElements("//center/table/tbody/tr/td/font/strong") // Find assignments table
         .map(classAssignmentTableTitleNode => {

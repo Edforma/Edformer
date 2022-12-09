@@ -1,4 +1,6 @@
 import { Handlers, Integrations, init } from '@sentry/node'
+import "@sentry/tracing";
+import {ProfilingIntegration} from "@sentry/profiling-node";
 import config from './config.json' assert {type: 'json'}; // Load configuration data
 import { getGrades, getStudentData, login, logout } from './components/utils.js' // Utilitys/API functions
 
@@ -17,12 +19,15 @@ winston.info('Initializing Sentry...')
 init({
     dsn: config.debugging.sentryDsn,
     integrations: [
-        // enable HTTP calls tracing
+        // HTTP calls tracing
         new Integrations.Http({ tracing: true }),
-        // enable Express.js middleware tracing
+        // express.js middleware tracing
         new _Integrations.Express({ app }),
+        // profiling integration
+        new ProfilingIntegration()
     ],
     tracesSampleRate: config.debugging.sentryTraceSamplingRate,
+    profilesSampleRate: config.debugging.sentryTraceProfilingRate,
 })
 // Add some sentry middleware
 app.use(Handlers.requestHandler());

@@ -4,7 +4,8 @@
   "description": "Edformer's REST API, allowing for interacting with Conroe ISD's Student Access Center",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "run": "node .",
+    "runprod": "NODE_ENV=production node ."
   },
   "author": "Griffin Bauer",
   "license": "MIT",
@@ -19,6 +20,7 @@
     "cliffy": "^2.5.1",
     "express": "^4.17.3",
     "pouchdb": "^7.2.2",
+    "socket.io": "^4.5.4",
     "tough-cookie": "^4.0.0",
     "winston": "^3.6.0",
     "xmldom": "^0.6.0",

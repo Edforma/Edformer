@@ -9,12 +9,10 @@ import express from 'express' // expressJS
 import './components/logger.js' // Set up default logger
 import winston from 'winston'
 import PouchDB from 'pouchdb';
-import { Server } from 'socket.io'
-import http from 'http'
+import { CLI } from 'cliffy'
 
 const app = express() // Initialize express app
-const socketServ = http.createServer(app) // Initialize server for socket.io
-const io = new Server(socketServ)
+// const io = new Server(socketServ)
 
 // Initialize sentry
 init({
@@ -118,92 +116,93 @@ app.use(function onError(err, req, res, next) {
 });
 
 // Listen on whatever port is selected
-socketServ.listen(config.port, async () => {
+app.listen(config.port, async () => {
     winston.info(`Edformer has started.`)
     // Begin CLI initilization
     // I want to eventually move the commands to another place, but this works for now.
-    // const cli = new CLI()
-    //     .setDelimiter('edformer> ')
-    //     .addCommand("database", {
-    //         description: "Run operations with the token database",
-    //         subcommands: {
-    //             info: {
-    //                 description: "Get information on the database",
-    //                 action: async () => {
-    //                     await db.info().then((info) => {
-    //                         winston.info(`Database name: ${info.db_name}`)
-    //                         winston.info(`Database adapter: ${info.adapter}`)
-    //                         winston.info(`Number of stored tokens: ${info.doc_count}`);
-    //                     })
-    //                 }
-    //             },
-    //             cookie: {
-    //                 description: "Get the raw ASP Session cookie of a token",
-    //                 parameters: ['token'],
-    //                 action: async (params) => {
-    //                     let authDoc = await db.get("session-" + params.token);
-    //                     return winston.info(authDoc.cookieData.name + '=' + authDoc.cookieData.token)
-    //                 }
-    //             },
-    //             wipeall: {
-    //                 description: "Delete all tokens stored in PouchDB",
-    //                 options: [{ label: "seriously", description: "You seriously want to do this" }],
-    //                 action: async (params, options) => {
-    //                     if (!options.seriously) {
-    //                         winston.error('This command wipes all tokens from PouchDB, invalidating all sessions linked to this instance of Edformer.')
-    //                         winston.error('If you really want to do this, pass the @seriously option.')
-    //                     } else {
-    //                         winston.error('If you say so. Wiping all documents in PouchDB...')
-    //                         db.destroy()
-    //                         winston.error('Finished.')
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     })
-    //     .addCommand("exit", {
-    //         description: "Exits Edformer.",
-    //         action: () => {
-    //             winston.info('Closing sessions, please wait...')
-    //             process.exit();
-    //         },
-    //     })
-    //     .show();
+    const cli = new CLI()
+        .setDelimiter('e: ')
+        .addCommand("database", {
+            description: "Run operations with the token database",
+            subcommands: {
+                info: {
+                    description: "Get information on the database",
+                    action: async () => {
+                        await db.info().then((info) => {
+                            winston.info(`Database name: ${info.db_name}`)
+                            winston.info(`Database adapter: ${info.adapter}`)
+                            winston.info(`Number of stored tokens: ${info.doc_count}`);
+                        })
+                    }
+                },
+                cookie: {
+                    description: "Get the raw ASP Session cookie of a token",
+                    parameters: ['token'],
+                    action: async (params) => {
+                        let authDoc = await db.get("session-" + params.token);
+                        return winston.info(authDoc.cookieData.name + '=' + authDoc.cookieData.token)
+                    }
+                },
+                wipeall: {
+                    description: "Delete all tokens stored in PouchDB",
+                    options: [{ label: "seriously", description: "You seriously want to do this" }],
+                    action: async (params, options) => {
+                        if (!options.seriously) {
+                            winston.error('This command wipes all tokens from PouchDB, invalidating all sessions linked to this instance of Edformer.')
+                            winston.error('If you really want to do this, pass the @seriously option.')
+                        } else {
+                            winston.error('If you say so. Wiping all documents in PouchDB...')
+                            db.destroy()
+                            winston.error('Finished.')
+                        }
+                    }
+                }
+            }
+        })
+        .addCommand("exit", {
+            description: "Exits Edformer.",
+            action: () => {
+                winston.info('Closing sessions, please wait...')
+                process.exit();
+            },
+        })
+        .show();
+        
 })
 
 // Socket.io stuff (Nexus console)
 // NOTE: the Nexus console system is still majorly work in progress.
 
-if (config.nexus.nexusEnabled === true) {
-    winston.warn('Nexus server active.')
-    io.on('connection', (socket) => {
-        if (socket.handshake.auth.token !== config.rcon.token) {
-            winston.warn(`${socket.handshake.address} just make an invalid remote console login attempt.`)
-            return socket.emit('rejected login', { error: "Token is invalid." })
-        }
+// if (config.nexus.nexusEnabled === true) {
+//     winston.warn('Nexus server active.')
+//     io.on('connection', (socket) => {
+//         if (socket.handshake.auth.token !== config.rcon.token) {
+//             winston.warn(`${socket.handshake.address} just make an invalid remote console login attempt.`)
+//             return socket.emit('rejected login', { error: "Token is invalid." })
+//         }
 
-        // If we're here, the login attempt was successful.
-        winston.info(`${socket.handshake.address} just logged into the remote console.`)
-        // Initial hello
-        socket.emit('hi', { environment: process.env.NODE_ENV })
+//         // If we're here, the login attempt was successful.
+//         winston.info(`${socket.handshake.address} just logged into the remote console.`)
+//         // Initial hello
+//         socket.emit('hi', { environment: process.env.NODE_ENV })
         
-        // Command handler
-        socket.on('command', (data, callback) => {
-            // Commands
-            switch (data.command) {
-                case 'ping':
-                    return callback(`Pong! Up for ${process.uptime()} on ${process.getuid()}`)
-                case 'disconnect':
-                    return socket.disconnect()
-                default:
-                    console.log(data.command)
-                    return callback('Unknown command.')
-            }
-        })
-    })
-} else {
-    winston.warn('Nexus server inactive, management will be difficult')
-    io.on('connection', (socket) => {
-        return socket.emit('rejected login', { error: "Nexus is disabled on this server." })
-    })
-}
+//         // Command handler
+//         socket.on('command', (data, callback) => {
+//             // Commands
+//             switch (data.command) {
+//                 case 'ping':
+//                     return callback(`Pong! Up for ${process.uptime()} on ${process.getuid()}`)
+//                 case 'disconnect':
+//                     return socket.disconnect()
+//                 default:
+//                     console.log(data.command)
+//                     return callback('Unknown command.')
+//             }
+//         })
+//     })
+// } else {
+//     winston.warn('Nexus server inactive, management will be difficult')
+//     io.on('connection', (socket) => {
+//         return socket.emit('rejected login', { error: "Nexus is disabled on this server." })
+//     })
+// }

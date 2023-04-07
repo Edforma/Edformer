@@ -176,13 +176,14 @@ const getGrades = async (token, res) => {
             var assignments = tableNodeXPath
                 .findElements('//tr[@bgcolor]')
                 .flatMap(trNode => {
+                    console.log(isNaN(parseFloat(trNode.childNodes[4].textContent.trim())) ? trNode.childNodes[4].textContent.trim() : parseFloat(trNode.childNodes[4].textContent.trim()))
                     return trNode.childNodes.length == 10
                         ? [{
                             dueDate: trNode.childNodes[0].textContent.trim(),
                             assignedDate: trNode.childNodes[1].textContent.trim(),
                             assignmentName: trNode.childNodes[2].textContent.trim(),
                             category: trNode.childNodes[3].textContent.trim(),
-                            score: parseFloat(trNode.childNodes[4].textContent.trim()),
+                            score: isNaN(parseFloat(trNode.childNodes[4].textContent.trim())) ? trNode.childNodes[4].textContent.trim() : parseFloat(trNode.childNodes[4].textContent.trim()), // This feels really weird and I don't like it. It gets the job done though.
                             totalPoints: parseInt(trNode.childNodes[7].textContent.trim()),
                             percentage: parseInt(trNode.childNodes[9].textContent.trim())
                         }]

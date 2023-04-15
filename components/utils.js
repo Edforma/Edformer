@@ -133,7 +133,12 @@ const getStudentData = async (token, res) => {
  * @param {string} token A valid Edformer access token.
  */
 const getGrades = async (token, res) => {
-    let page = await axios.get('https://pac.conroeisd.net/assignments.asp', {
+
+    let gradeParams = new URLSearchParams({
+        sortit: 1 // Request sort by due date Gives us a nice big list
+    })
+
+    let page = await axios.post('https://pac.conroeisd.net/assignments.asp', gradeParams.toString(), {
         headers: {
             'cookie': await _authCookie(token)
         }
@@ -163,62 +168,84 @@ const getGrades = async (token, res) => {
         });
         return;
     }
+    
+    let $ = cheerioLoad(page.data)
 
-    const classAssignments = fromPageSource(page.data) // Select current page as source
-        .findElements("//center/table/tbody/tr/td/font/strong") // Find assignments table
-        .map(classAssignmentTableTitleNode => {
-            var tableNodeXPath = fromNode(
-                classAssignmentTableTitleNode.parentNode.parentNode.parentNode.parentNode.parentNode
-            );
+    // Create an empty array to hold the course objects
+    let courses = [];
 
-            var course = classAssignmentTableTitleNode.textContent.trim().split("•")[1].trim();
+    // Loop through each row in the table (skip the first two rows)
+    $('body > center > table tr').each(function(index) {
+    if (index > 1) {
+        // Extract the data from the row
+        let period = $(this).find('td:eq(0)').text().trim();
+        let subject = $(this).find('td:eq(1)').text().trim();
+        let course = $(this).find('td:eq(2)').text().trim();
+        let teacher = $(this).find('td:eq(3)').text().trim();
+        let email = $(this).find('td:eq(4) a').attr('href').replace("mailto:", "")
+        let average = parseFloat($(this).find('td:eq(5)').text().trim());
 
-            var assignments = tableNodeXPath
-                .findElements('//tr[@bgcolor]')
-                .flatMap(trNode => {
-                    console.log(isNaN(parseFloat(trNode.childNodes[4].textContent.trim())) ? trNode.childNodes[4].textContent.trim() : parseFloat(trNode.childNodes[4].textContent.trim()))
-                    return trNode.childNodes.length == 10
-                        ? [{
-                            dueDate: trNode.childNodes[0].textContent.trim(),
-                            assignedDate: trNode.childNodes[1].textContent.trim(),
-                            assignmentName: trNode.childNodes[2].textContent.trim(),
-                            category: trNode.childNodes[3].textContent.trim(),
-                            score: isNaN(parseFloat(trNode.childNodes[4].textContent.trim())) ? trNode.childNodes[4].textContent.trim() : parseFloat(trNode.childNodes[4].textContent.trim()), // This feels really weird and I don't like it. It gets the job done though.
-                            totalPoints: parseInt(trNode.childNodes[7].textContent.trim()),
-                            percentage: parseInt(trNode.childNodes[9].textContent.trim())
-                        }]
-                        : []
-                });
+        // Create a course object and add it to the array
+        let courseObj = {
+        period: period,
+        subject: subject,
+        course: course,
+        teacher: teacher,
+        teacherEmail: email,
+        average: average
+        };
+        courses.push(courseObj);
+    }
+    });
 
-            return { course, assignments }
-        })
-        .reduce((acc, assignments) => {
-            return { ...acc, [assignments.course]: assignments }
-        }, {});
+    // Print the array of course objects to the console
+    console.log(courses);
 
-    const classAverages = fromNode(
-        fromPageSource(page.data).findElement("//font[contains(text(), 'Class Averages')]")
-            .parentNode.parentNode.parentNode.parentNode.parentNode
-    )
-        .findElements('//tr[@bgcolor]')
-        .map(trNode => {
-            var course = trNode.childNodes[2].textContent.trim();
+    // Create an empty array to hold the course objects
+    let assignments = [];
 
-            return {
-                period: trNode.childNodes[0].textContent.trim(),
-                subject: trNode.childNodes[1].textContent.trim(),
-                course: course,
-                teacher: trNode.childNodes[3].textContent.trim(),
-                teacherEmail: trNode.childNodes[4].childNodes[0].getAttribute("href").split("mailto:")[1],
-                average: parseFloat(trNode.childNodes[5].textContent.trim()),
-                assignments: classAssignments[course].assignments
-            }
-        });
+    // Loop through each row in the table (skip the first two rows)
+    $('body > center > center > center > table > tbody > tr:nth-child(2) > td > table tr').each(function(index) {
+    if (index > 1) {
+        // Extract the data from the row
+        let dueDate = $(this).find('td:eq(0)').text().trim();
+        let assignedDate = $(this).find('td:eq(1)').text().trim();
+        let assignmentName = $(this).find('td:eq(2)').text().trim();
+        let courseId = $(this).find('td:eq(3)').text().trim();
+        let category = $(this).find('td:eq(5)').text().trim();
+        let score = isNaN(parseFloat($(this).find('td:eq(6)').text().trim())) ? $(this).find('td:eq(6)').text().trim() : parseFloat($(this).find('td:eq(6)').text().trim()); // This feels really weird and I don't like it. It gets the job done though.
+        let percent = parseFloat($(this).find('td:eq(11)').text().trim());
+        // Create a course object and add it to the array
+        let assignmentObj = {
+            dueDate: dueDate,
+            assignedDate: assignedDate,
+            assignmentName: assignmentName,
+            courseId: courseId,
+            category: category,
+            score: score,
+            percentage: percent
+        };
+        assignments.push(assignmentObj);
+    }
+    });
+
+    // Print the array of course objects to the console
+    // console.log(assignments);
+
+    for (let assignment of assignments) {
+        let courseRef = courses.find(course => course.course === assignment.courseId)
+        if (courseRef.assignments) {
+            courseRef.assignments.push(assignment)
+        } else {
+            courseRef.assignments = []
+            courseRef.assignments.push(assignment)
+        }
+    }
 
     // Assemble our response form, by grabbing all of the data.
     const responseData = {
         status: "success",
-        classAverages
+        classAverages: courses
     }
 
     res.send(responseData);

@@ -213,7 +213,7 @@ const getGrades = async (token, res) => {
 
     // Loop through each row in the table (skip the first two rows)
     $('body > center > center > center > table > tbody > tr:nth-child(2) > td > table tr').each(function(index) {
-    if (index > 1) {
+    if (index >= 1) {
         // Extract the data from the row
         let dueDate = $(this).find('td:eq(0)').text().trim();
         let assignedDate = $(this).find('td:eq(1)').text().trim();

@@ -1,5 +1,6 @@
 module.exports = {
   apps : [{
+    name: "Edforma API",
     script: 'index.js',
     watch: '.'
   }],
@@ -12,6 +13,7 @@ module.exports = {
       repo : 'https://github.com/Edforma/Edformer.git',
       path : '/home/griffin/pm2Data/Edforma',
       'pre-setup': "ls -la && pwd && uname -a && yarn --version",
+      'pre-deploy-local': "echo Uploading configuration...",
       'post-deploy' : 'yarn && pm2 reload ecosystem.config.cjs --env production'
     }
   }

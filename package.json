@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "run": "node .",
-    "production": "NODE_ENV=production node ."
+    "production": "NODE_ENV=production node .",
+    "deploy": "pm2 deploy ecosystem.config.cjs production",
+    "pressure": "artillery run --output report.json artillery.json && artillery report report.json"
   },
   "author": "Griffin Bauer",
   "license": "MIT",

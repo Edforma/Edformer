@@ -1,7 +1,6 @@
 import { Handlers, Integrations, init } from '@sentry/node'
 import "@sentry/tracing";
 import {ProfilingIntegration} from "@sentry/profiling-node";
-import config from './config.json' assert {type: 'json'}; // Load configuration data
 import { getGrades, getStudentData, login, logout } from './components/utils.js' // Utilitys/API functions
 
 import { Integrations as _Integrations } from "@sentry/tracing"

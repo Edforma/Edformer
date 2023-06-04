@@ -14,9 +14,10 @@ import { CLI } from 'cliffy'
 const app = express() // Initialize express app
 // const io = new Server(socketServ)
 
+console.log(process.env)
 // Initialize sentry
 init({
-    dsn: config.debugging.sentryDsn,
+    dsn: process.env.SENTRY_DSN,
     integrations: [
         // HTTP calls tracing
         new Integrations.Http({ tracing: true }),
@@ -25,8 +26,8 @@ init({
         // profiling integration
         new ProfilingIntegration()
     ],
-    tracesSampleRate: config.debugging.sentryTraceSamplingRate,
-    profilesSampleRate: config.debugging.sentryTraceProfilingRate,
+    tracesSampleRate: process.env.SENTRY_TRACESAMPLERATE,
+    profilesSampleRate: process.env.SENTRY_TRACEPROFILERATE,
 })
 // Add some sentry middleware
 app.use(Handlers.requestHandler());
@@ -100,7 +101,7 @@ app
             status: 'success',
             server: {
                 version: process.env.npm_package_version,
-                announcement: config.announcement
+                announcement: process.env.SERVER_ANNOUNCEMENT
             }
         });
     })
@@ -116,7 +117,7 @@ app.use(function onError(err, req, res, next) {
 });
 
 // Listen on whatever port is selected
-app.listen(config.port, async () => {
+app.listen(process.env.PORT, async () => {
     winston.info(`Edformer has started.`)
     // Begin CLI initilization
     // I want to eventually move the commands to another place, but this works for now.
@@ -169,40 +170,3 @@ app.listen(config.port, async () => {
         .show();
         
 })
-
-// Socket.io stuff (Nexus console)
-// NOTE: the Nexus console system is still majorly work in progress.
-
-// if (config.nexus.nexusEnabled === true) {
-//     winston.warn('Nexus server active.')
-//     io.on('connection', (socket) => {
-//         if (socket.handshake.auth.token !== config.rcon.token) {
-//             winston.warn(`${socket.handshake.address} just make an invalid remote console login attempt.`)
-//             return socket.emit('rejected login', { error: "Token is invalid." })
-//         }
-
-//         // If we're here, the login attempt was successful.
-//         winston.info(`${socket.handshake.address} just logged into the remote console.`)
-//         // Initial hello
-//         socket.emit('hi', { environment: process.env.NODE_ENV })
-        
-//         // Command handler
-//         socket.on('command', (data, callback) => {
-//             // Commands
-//             switch (data.command) {
-//                 case 'ping':
-//                     return callback(`Pong! Up for ${process.uptime()} on ${process.getuid()}`)
-//                 case 'disconnect':
-//                     return socket.disconnect()
-//                 default:
-//                     console.log(data.command)
-//                     return callback('Unknown command.')
-//             }
-//         })
-//     })
-// } else {
-//     winston.warn('Nexus server inactive, management will be difficult')
-//     io.on('connection', (socket) => {
-//         return socket.emit('rejected login', { error: "Nexus is disabled on this server." })
-//     })
-// }

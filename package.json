@@ -7,7 +7,7 @@
     "run": "node .",
     "production": "NODE_ENV=production node .",
     "deploy": "pm2 deploy ecosystem.config.cjs production",
-    "pressure": "artillery run --output report.json artillery.json && artillery report report.json"
+    "pressure": "artillery run --output report.json artillery.yml && artillery report report.json"
   },
   "author": "Griffin Bauer",
   "license": "MIT",

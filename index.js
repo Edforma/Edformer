@@ -10,7 +10,7 @@ import PouchDB from 'pouchdb';
 import { CLI } from 'cliffy'
 
 const app = express() // Initialize express app
-// const io = new Server(socketServ)
+const db = new PouchDB('data')
 
 console.log(process.env)
 // Initialize sentry

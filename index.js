@@ -3,7 +3,6 @@ import "@sentry/tracing";
 import {ProfilingIntegration} from "@sentry/profiling-node";
 import { getGrades, getStudentData, login, logout } from './components/utils.js' // Utilitys/API functions
 
-import { Integrations as _Integrations } from "@sentry/tracing"
 import express from 'express' // expressJS
 import './components/logger.js' // Set up default logger
 import winston from 'winston'
@@ -21,7 +20,7 @@ init({
         // HTTP calls tracing
         new Integrations.Http({ tracing: true }),
         // express.js middleware tracing
-        new _Integrations.Express({ app }),
+        new Integrations.Express({ app }),
         // profiling integration
         new ProfilingIntegration()
     ],

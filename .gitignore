@@ -14,3 +14,4 @@ config.json
 artillery.yml
 report.json
 report.json.html
+ecosystem.config.cjs

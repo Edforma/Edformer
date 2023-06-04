@@ -12,3 +12,4 @@ logs/
 .html
 config.json
 artillery.yml
+ecosystem.config.js

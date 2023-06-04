@@ -92,19 +92,19 @@ const getStudentData = async (token, res) => {
 
     const $ = cheerioLoad(studentInfoPage.data);
 
-    const _getKeyValue = async (key) => {
+    const getTableValue = (key) => {
         return $(`td:contains(${key})`).filter(function() {
             return $(this).text().trim() === key
         }).next().text() 
     }
 
-    winston.info(_getKeyValue('Student'))
+    // winston.info(getTableValue('Student'))
     // Assemble our response form, by grabbing all of the data.
     const responseData = {
         status: "success",
         registration: {
-            name: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(2) > td:nth-child(2)").text(),
-            grade: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(2) > td:nth-child(4)").text()),
+            name: getTableValue('Student'),
+            grade: parseInt(getTableValue('Grade')),
             studentPicture: 'https://pac.conroeisd.net/' + $("body > table > tbody > tr > td:nth-child(1) > img").attr('src'),
             counselor: {
                 name: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(3) > td:nth-child(2)").contents().text().trim(),
@@ -116,19 +116,19 @@ const getStudentData = async (token, res) => {
             }
         },
         attendance: {
-            totalAbsences: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(6) > td:nth-child(2)").text()),
-            totalTardies: parseInt($("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(6) > td:nth-child(4)").text())
+            totalAbsences: parseInt(getTableValue('Total Absences')),
+            totalTardies: parseInt(getTableValue('Tardies'))
         },
         transportation: {
-            busToCampus: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(9) > td:nth-child(2)").text(),
-            busToCampusStopTime: `${$("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(9) > td:nth-child(4)").text()} ${$("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(9) > td:nth-child(6)").text()}`,
-            busFromCampus: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(10) > td:nth-child(2)").text(),
-            busFromCampusStopTime: `${$("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(10) > td:nth-child(4)").text()} ${$("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(10) > td:nth-child(6)").text()}`
+            busToCampus: getTableValue('Bus To School'),
+            busToCampusStopTime: `${getTableValue('Stop Time')} ${getTableValue('Route')}`,
+            busFromCampus: getTableValue('Bus From School'),
+            busFromCampusStopTime: `${getTableValue('Stop From')} ${getTableValue('Route From')}`,
         },
         misc: {
-            lunchFunds: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(14) > td:nth-child(2)").text().split(" ")[0],
-            studentUsername: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(16) > td:nth-child(2)").text(),
-            studentID: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(15) > td:nth-child(2)").text(),
+            lunchFunds: getTableValue('School Meals Available').split(" ")[0],
+            studentUsername: getTableValue('Student Username / Password').split(" ")[0],
+            studentID: getTableValue('Student ID')
             //            lastSessionTimestamp: $("body > center > table > tbody > tr > td:nth-child(2) > table > tbody > tr:nth-child(21) > td:nth-child(2)").text() Currently breaks on failing grades
         }
     }

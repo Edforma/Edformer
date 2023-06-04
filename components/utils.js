@@ -205,9 +205,6 @@ const getGrades = async (token, res) => {
     }
     });
 
-    // Print the array of course objects to the console
-    console.log(courses);
-
     // Create an empty array to hold the course objects
     let assignments = [];
 

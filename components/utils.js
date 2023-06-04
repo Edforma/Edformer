@@ -92,6 +92,13 @@ const getStudentData = async (token, res) => {
 
     const $ = cheerioLoad(studentInfoPage.data);
 
+    const _getKeyValue = async (key) => {
+        return $(`td:contains(${key})`).filter(function() {
+            return $(this).text().trim() === key
+        }).next().text() 
+    }
+
+    winston.info(_getKeyValue('Student'))
     // Assemble our response form, by grabbing all of the data.
     const responseData = {
         status: "success",

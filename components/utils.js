@@ -29,8 +29,6 @@ const _authCookie = async (accessToken) => {
  * @param {string} psw Password of an Student Access Center account.
  */
 const login = async (usr, psw, res) => {
-    winston.info(`${usr} - Beginning login`)
-
     const jar = new CookieJar()
     const axiosTc = wrapper(axios.create({ jar }))
 

@@ -2,6 +2,7 @@ import winston from 'winston'
 
 winston.add(new winston.transports.File({ filename: `./logs/${new Date().toISOString()}.log` })) // Log to a file
 
+console.log(process.env.NODE_ENV)
 if (process.env.NODE_ENV !== 'production') {
   winston.add(new winston.transports.Console({
     format: winston.format.combine(

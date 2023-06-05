@@ -12,7 +12,7 @@ import { CLI } from 'cliffy'
 const app = express() // Initialize express app
 const db = new PouchDB('data')
 
-console.log(process.env)
+
 // Initialize sentry
 init({
     dsn: process.env.SENTRY_DSN,
@@ -117,54 +117,4 @@ app.use(function onError(err, req, res, next) {
 // Listen on whatever port is selected
 app.listen(process.env.PORT, async () => {
     winston.info(`Edformer has started.`)
-    // Begin CLI initilization
-    // I want to eventually move the commands to another place, but this works for now.
-    const cli = new CLI()
-        .setDelimiter('e: ')
-        .addCommand("database", {
-            description: "Run operations with the token database",
-            subcommands: {
-                info: {
-                    description: "Get information on the database",
-                    action: async () => {
-                        await db.info().then((info) => {
-                            winston.info(`Database name: ${info.db_name}`)
-                            winston.info(`Database adapter: ${info.adapter}`)
-                            winston.info(`Number of stored tokens: ${info.doc_count}`);
-                        })
-                    }
-                },
-                cookie: {
-                    description: "Get the raw ASP Session cookie of a token",
-                    parameters: ['token'],
-                    action: async (params) => {
-                        let authDoc = await db.get("session-" + params.token);
-                        return winston.info(authDoc.cookieData.name + '=' + authDoc.cookieData.token)
-                    }
-                },
-                wipeall: {
-                    description: "Delete all tokens stored in PouchDB",
-                    options: [{ label: "seriously", description: "You seriously want to do this" }],
-                    action: async (params, options) => {
-                        if (!options.seriously) {
-                            winston.error('This command wipes all tokens from PouchDB, invalidating all sessions linked to this instance of Edformer.')
-                            winston.error('If you really want to do this, pass the @seriously option.')
-                        } else {
-                            winston.error('If you say so. Wiping all documents in PouchDB...')
-                            db.destroy()
-                            winston.error('Finished.')
-                        }
-                    }
-                }
-            }
-        })
-        .addCommand("exit", {
-            description: "Exits Edformer.",
-            action: () => {
-                winston.info('Closing sessions, please wait...')
-                process.exit();
-            },
-        })
-        .show();
-        
 })

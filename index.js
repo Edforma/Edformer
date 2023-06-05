@@ -6,6 +6,7 @@ import { getGrades, getStudentData, login, logout } from './components/utils.js'
 import express from 'express' // expressJS
 import './components/logger.js' // Set up default logger
 import winston from 'winston'
+import tx2 from 'tx2'
 
 const app = express() // Initialize express app
 
@@ -27,6 +28,13 @@ init({
 app.use(Handlers.requestHandler());
 app.use(Handlers.tracingHandler());
 
+// Initialize tickers for PM2
+let loginsPerSecondMeter = tx2.meter({
+    name: 'logins/sec',
+    samples: 1,
+    timeframe: 60
+})
+
 // API endpoints
 app
     .post('/auth/login', (req, res) => {
@@ -45,6 +53,7 @@ app
             });
             return;
         }
+        loginsPerSecondMeter.mark();
         login(req.headers.username, req.headers.password, res);
 
     })

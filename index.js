@@ -6,12 +6,8 @@ import { getGrades, getStudentData, login, logout } from './components/utils.js'
 import express from 'express' // expressJS
 import './components/logger.js' // Set up default logger
 import winston from 'winston'
-import PouchDB from 'pouchdb';
-import { CLI } from 'cliffy'
 
 const app = express() // Initialize express app
-const db = new PouchDB('data')
-
 
 // Initialize sentry
 init({

@@ -10,7 +10,6 @@ logs/
 
 .DS_Store
 .html
-config.json
 artillery.yml
 report.json
 report.json.html

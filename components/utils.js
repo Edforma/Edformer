@@ -254,6 +254,38 @@ const getGrades = async (token, res) => {
 }
 
 /**
+ * Fetches a student's schedule.
+ * @param {string} token A valid Edformer access token.
+ */
+const getSchedule = async (token, res) => {
+    // This function will use a given session ID to contact the SAC page, and to
+    // get some basic user data. Triggered by /user/getDetails.
+
+    let studentSchedulePage = await axios.get('https://pac.conroeisd.net/sched.asp', {
+        headers: {
+            'cookie': await _authCookie(token)
+        }
+    });
+
+    if (studentSchedulePage.data.indexOf("Session has ended") >= 0) {
+        res.status(400).send({
+            status: "failed",
+            error: "Invalid/ended session"
+        });
+        return;
+    }
+
+    const $ = cheerioLoad(studentSchedulePage.data);
+
+    // const getTableValue = (key) => {
+    //     return $(`td:contains(${key})`).filter(function() {
+    //         return $(this).text().trim() === key
+    //     }).next().text() 
+    // }
+    res.send(responseData);
+}
+
+/**
  * Logs a student out. This will be reflected in the database AND Conroe ISD's servers.
  * @param {string} token A valid Edformer access token.
  */
@@ -275,4 +307,5 @@ const logout = async (token, res) => {
 export { login };
 export { getStudentData };
 export { getGrades };
+export { getSchedule };
 export { logout };

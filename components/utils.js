@@ -277,11 +277,40 @@ const getSchedule = async (token, res) => {
 
     const $ = cheerioLoad(studentSchedulePage.data);
 
-    // const getTableValue = (key) => {
-    //     return $(`td:contains(${key})`).filter(function() {
-    //         return $(this).text().trim() === key
-    //     }).next().text() 
-    // }
+    let sem1 = []
+    let sem2 = []
+
+    // Semester 1
+    $('tr[bgcolor="lightgrey"]').each(function() {
+        sem1.push({
+            period: $(this).find('td:nth-child(1)').text(),
+            name: $(this).find('td:nth-child(2)').text(),
+            courseId: $(this).find('td:nth-child(3)').text(),
+            time: $(this).find('td:nth-child(4)').text(),
+            room: $(this).find('td:nth-child(7)').text(),
+            teacher: $(this).find('td:nth-child(8)').text()
+        })
+    });
+
+    // Semester 2
+    $('tr[bgcolor="whitesmoke"]').each(function() {
+        sem2.push({
+            period: $(this).find('td:nth-child(1)').text(),
+            name: $(this).find('td:nth-child(2)').text(),
+            courseId: $(this).find('td:nth-child(3)').text(),
+            time: $(this).find('td:nth-child(4)').text(),
+            room: $(this).find('td:nth-child(7)').text(),
+            teacher: $(this).find('td:nth-child(8)').text()
+        })
+    });
+
+    const responseData = {
+        status: "success",
+        semesters: {
+            sem1,
+            sem2
+        }
+    }
     res.send(responseData);
 }
 

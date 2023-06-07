@@ -315,6 +315,96 @@ const getSchedule = async (token, res) => {
 }
 
 /**
+ * Fetches a student's progress reports
+ * @param {string} token A valid Edformer access token.
+ */
+const getProgReports = async (token, res) => {
+
+    let page = await axios.get('https://pac.conroeisd.net/progrpt.asp', {
+        headers: {
+            'cookie': await _authCookie(token)
+        }
+    });
+
+    // Detect an ended/invalid session
+    if (page.data.indexOf("Session has ended") >= 0) {
+        res.status(400).send({
+            status: "failed",
+            error: "Invalid/ended session"
+        });
+        return;
+    }
+
+    if (page.data.indexOf("No Averages for this student") >= 0) {
+        res.status(400).send({
+            status: "failed",
+            error: "No averages are available for viewing"
+        });
+        return;
+    }
+
+    if (page.data.indexOf("Viewing of grades is currently disabled") >= 0) {
+        res.status(400).send({
+            status: "failed",
+            error: "Viewing of grades is disabled"
+        });
+        return;
+    }
+
+    let $ = cheerioLoad(page.data)
+
+    var progressReports = []; // Array to store progress reports
+
+    $("table:not(:has(table)):contains('Progress Report')").each(function () {
+        var tableRows = $(this).find("tr");
+
+        var tablePeriods = []; // Array to store periods within the table
+
+        // Extract the date from the specified table row with class "trc"
+        var dateText = $(this).find("tr.trc").text();
+        var date = dateText.match(/\d{1,2}\/\d{1,2}\/\d{4}/)[0]; // Extract date using regex
+
+        // Start iteration from index 2 to skip the top two header rows
+        for (var i = 2; i < tableRows.length; i++) {
+            var row = tableRows[i];
+            var period = $(row).find("td:eq(0)").text().replace(/\s+/g, ' ').trim();
+            var courseName = $(row).find("td:eq(1)").text().replace(/\s+/g, ' ').trim();
+            var course = $(row).find("td:eq(2)").text().replace(/\s+/g, ' ').trim();
+            var teacher = $(row).find("td:eq(3)").text().replace(/\s+/g, ' ').trim();
+            var grade = $(row).find("td:eq(4)").text().replace(/\s+/g, ' ').trim();
+
+            // Create an object for the row data
+            var rowData = {
+                period: period,
+                courseName: courseName,
+                course: course,
+                teacher: teacher,
+                grade: grade
+            };
+
+            tablePeriods.push(rowData);
+        }
+
+        // Create an object to hold the table data
+        var tableData = {
+            date: date,
+            periods: tablePeriods
+        };
+
+        progressReports.push(tableData);
+    });
+
+
+    // Assemble our response form, by grabbing all of the data.
+    const responseData = {
+        status: "success",
+        progressReports
+    }
+
+    res.send(responseData);
+}
+
+/**
  * Logs a student out. This will be reflected in the database AND Conroe ISD's servers.
  * @param {string} token A valid Edformer access token.
  */
@@ -337,4 +427,5 @@ export { login };
 export { getStudentData };
 export { getGrades };
 export { getSchedule };
+export { getProgReports };
 export { logout };

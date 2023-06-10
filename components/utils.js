@@ -284,8 +284,8 @@ const getSchedule = async (token, res) => {
     $('tr[bgcolor="lightgrey"]').each(function() {
         sem1.push({
             period: $(this).find('td:nth-child(1)').text(),
-            name: $(this).find('td:nth-child(2)').text(),
-            courseId: $(this).find('td:nth-child(3)').text(),
+            subject: $(this).find('td:nth-child(2)').text(),
+            course: $(this).find('td:nth-child(3)').text(),
             time: $(this).find('td:nth-child(4)').text(),
             room: $(this).find('td:nth-child(7)').text(),
             teacher: $(this).find('td:nth-child(8)').text()
@@ -296,8 +296,8 @@ const getSchedule = async (token, res) => {
     $('tr[bgcolor="whitesmoke"]').each(function() {
         sem2.push({
             period: $(this).find('td:nth-child(1)').text(),
-            name: $(this).find('td:nth-child(2)').text(),
-            courseId: $(this).find('td:nth-child(3)').text(),
+            subject: $(this).find('td:nth-child(2)').text(),
+            course: $(this).find('td:nth-child(3)').text(),
             time: $(this).find('td:nth-child(4)').text(),
             room: $(this).find('td:nth-child(7)').text(),
             teacher: $(this).find('td:nth-child(8)').text()

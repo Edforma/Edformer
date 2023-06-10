@@ -140,6 +140,7 @@ const getStudentData = async (token, res) => {
 const getGrades = async (token, res) => {
 
     let gradeParams = new URLSearchParams({
+        // ScheduleMP: req.headers.mp ? req.headers.mp : null
         sortit: 1 // Request sort by due date Gives us a nice big list
     })
 
@@ -247,6 +248,7 @@ const getGrades = async (token, res) => {
     // Assemble our response form, by grabbing all of the data.
     const responseData = {
         status: "success",
+        markingPeriod: parseInt($('select.logininput3:nth-child(1)').val()),
         classAverages: courses
     }
 

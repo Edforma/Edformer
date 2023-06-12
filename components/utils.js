@@ -453,10 +453,28 @@ const getReferrals = async (token, res) => {
     }
 
     let $ = cheerioLoad(page.data)
-
+    let referrals = []
     $('body > center > table tr:not([class="trc"])').each(function () {
-        
+        referrals.push({
+            creationDate: formatDate($(this).find('td:nth-child(1)').text()),
+            submitter: $(this).find('td:nth-child(2)').text(),
+            incidentDate: formatDate($(this).find('td:nth-child(3)').text()),
+            adminDate: formatDate($(this).find('td:nth-child(6)').text()),
+            description: $(this).find('td:nth-child(4)').text(),
+            administrator: $(this).find('td:nth-child(5)').text(),
+            code: parseInt($(this).find('td:nth-child(7)').text()),
+            consequences: $(this).find('td:nth-child(8)').text(), // TODO: Objectify this so Edforma can process it neatly. Also, students can get more than one consequence.
+            adminComments: $(this).find('td:nth-child(9)').text(),
+
+            
+        })
     })
+
+    const responseData = {
+        status: "success",
+        referrals
+    }
+    res.send(responseData);
 }
 
 /**
@@ -483,4 +501,5 @@ export { getStudentData };
 export { getGrades };
 export { getSchedule };
 export { getProgReports };
+export { getReferrals }
 export { logout };

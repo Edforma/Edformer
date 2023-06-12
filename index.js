@@ -1,7 +1,7 @@
 import { Handlers, Integrations, init } from '@sentry/node'
 import "@sentry/tracing";
 import {ProfilingIntegration} from "@sentry/profiling-node";
-import { getGrades, getStudentData, getSchedule, login, logout, getProgReports } from './components/utils.js' // Utilitys/API functions
+import { getGrades, getStudentData, getSchedule, login, logout, getProgReports, getReferrals } from './components/utils.js' // Utilitys/API functions
 
 import express from 'express' // expressJS
 import './components/logger.js' // Set up default logger
@@ -96,6 +96,16 @@ app
             });
             return;
         } else getProgReports(req.headers.accesstoken, res);
+    })
+    .get('/student/getReferrals', (req, res) => {
+
+        if (!req.headers.accesstoken) {
+            res.status(400).send({
+                status: "failed",
+                error: "accessToken missing."
+            });
+            return;
+        } else getReferrals(req.headers.accesstoken, res);
     })
     .post('/auth/logout', (req, res) => {
 

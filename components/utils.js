@@ -349,22 +349,6 @@ const getProgReports = async (token, res) => {
         return;
     }
 
-    if (page.data.indexOf("No Averages for this student") >= 0) {
-        res.status(400).send({
-            status: "failed",
-            error: "No averages are available for viewing"
-        });
-        return;
-    }
-
-    if (page.data.indexOf("Viewing of grades is currently disabled") >= 0) {
-        res.status(400).send({
-            status: "failed",
-            error: "Viewing of grades is disabled"
-        });
-        return;
-    }
-
     let $ = cheerioLoad(page.data)
 
     var progressReports = []; // Array to store progress reports
@@ -416,6 +400,63 @@ const getProgReports = async (token, res) => {
     }
 
     res.send(responseData);
+}
+
+/**
+ * Fetches a student's absences.
+ * @param {string} token A valid Edforma access token.
+ */
+
+const getAbsences = async (token, res) => {
+
+    let page = await axios.get('https://pac.conroeisd.net/Absences.asp', {
+        headers: {
+            'cookie': await _authCookie(token)
+        }
+    });
+
+    // Detect an ended/invalid session
+    if (page.data.indexOf("Session has ended") >= 0) {
+        res.status(400).send({
+            status: "failed",
+            error: "Invalid/ended session"
+        });
+        return;
+    }
+
+    let $ = cheerioLoad(page.data)
+
+    $('body > center > center > table tr[align]').each(function () {
+        
+    })
+}
+
+/**
+ * Fetches a student's referrals.
+ * @param {string} token A valid Edforma access token.
+ */
+const getReferrals = async (token, res) => {
+
+    let page = await axios.get('https://pac.conroeisd.net/referrals.asp', {
+        headers: {
+            'cookie': await _authCookie(token)
+        }
+    });
+
+    // Detect an ended/invalid session
+    if (page.data.indexOf("Session has ended") >= 0) {
+        res.status(400).send({
+            status: "failed",
+            error: "Invalid/ended session"
+        });
+        return;
+    }
+
+    let $ = cheerioLoad(page.data)
+
+    $('body > center > center > table tr[align]').each(function () {
+        
+    })
 }
 
 /**

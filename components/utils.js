@@ -8,7 +8,6 @@ import { load as cheerioLoad } from 'cheerio';
 import { randomUUID } from "crypto";
 import winston from 'winston'
 import { wrapper } from 'axios-cookiejar-support';
-
 const db = new PouchDB('data')
 
 /**
@@ -22,6 +21,19 @@ const _authCookie = async (accessToken) => {
     // Return the cookie data stored inside the document.
     return authDoc.cookieData.name + '=' + authDoc.cookieData.token;
 }
+
+/**
+ * Convert a mm/dd/yyyy date to a human readable "Month Day, Year" format.
+ * @param {string} date A date in the mm/dd/yyyy format.
+ * @returns {string} A human-readable timestamp in the "Month Day, Year" format.
+ */
+function formatDate(dateString) {
+    const [month, day, year] = dateString.split('/');
+
+    const formattedDate = new Date(`${month}/${day}/${year}`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  
+    return formattedDate;
+  }
 
 /**
  * Authenticate a student with the Conroe ISD servers. 
@@ -389,7 +401,7 @@ const getProgReports = async (token, res) => {
 
         // Create an object to hold the table data
         var tableData = {
-            date: date,
+            date: formatDate(date),
             periods: tablePeriods
         };
 

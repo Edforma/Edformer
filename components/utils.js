@@ -385,7 +385,7 @@ const getProgReports = async (token, res) => {
             var subject = $(row).find("td:eq(1)").text().replace(/\s+/g, ' ').trim();
             var course = $(row).find("td:eq(2)").text().replace(/\s+/g, ' ').trim();
             var teacher = $(row).find("td:eq(3)").text().replace(/\s+/g, ' ').trim();
-            var grade = parseInt($(row).find("td:eq(4)").text().replace(/\s+/g, ' ').trim());
+            var average = parseInt($(row).find("td:eq(4)").text().replace(/\s+/g, ' ').trim());
 
             // Create an object for the row data
             var rowData = {
@@ -393,7 +393,7 @@ const getProgReports = async (token, res) => {
                 subject: subject,
                 course: course,
                 teacher: teacher,
-                grade: grade
+                average: average
             };
 
             tablePeriods.push(rowData);

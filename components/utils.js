@@ -454,7 +454,7 @@ const getReferrals = async (token, res) => {
 
     let $ = cheerioLoad(page.data)
 
-    $('body > center > center > table tr[align]').each(function () {
+    $('body > center > table tr:not([class="trc"])').each(function () {
         
     })
 }

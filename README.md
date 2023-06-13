@@ -10,12 +10,12 @@ Edformer acts as a sort of middleman between you and the Student Access Center. 
 ```bash
 git clone https://github.com/Edforma/Edformer.git
 yarn install
-PORT=3000 node .
+yarn run production # you can also use "yarn run development" for development mode.
 ```
 ## Troubleshooting/Questions
 
 ### I can't access Edformer at all! What's the deal, man?
-Make sure you're setting the PORT environment variable!
+Make sure you're trying to access Edformer on the right PORT, set with the PORT shell environment variable.
 ## Credits
 
 - Node.JS

@@ -4,8 +4,8 @@
   "description": "Edformer's REST API, allowing for interacting with Conroe ISD's Student Access Center",
   "main": "index.js",
   "scripts": {
-    "run": "node .",
-    "production": "NODE_ENV=production node .",
+    "development": "NODE_ENV=development PORT=3000 node .",
+    "production": "NODE_ENV=production PORT=3000 node .",
     "deploy": "pm2 deploy ecosystem.config.cjs production",
     "pressure": "artillery run --output report.json artillery.yml && artillery report report.json"
   },

@@ -1,36 +1,30 @@
 # Edformer
-
-The API for Edforma.
-
-**Disclaimer:** This program is not affiliated with CISD.
+A RESTful API frontend for Conroe Independent School District's Student Access Center.
+**Disclaimer:** This program is not affiliated with CISD! Do not ask them for support.
 
 ## How does it work?
-When a student requests to use the SAC from ClassLink, CL will send a `POST` request the SAC webserver using an endpoint named `sso.asp`, sending alongside the student's username and password (it also sends some SSO related parameters that are unimportant). The SAC webserver returns a valid SAC session token located in `set-cookie.`
-
-Edformer replicates this flow in a server environment and grabs the authenticated token cookie, creates a new entry for it in a local database with a UUID reference, and sends that to the client. That UUID can then be used until the session expires.
-
+Edformer acts as a sort of middleman between you and the Student Access Center. It downloads the webpages for the information you need, and parses it into a program-friendly format that you can process to your heart's content.
 
 ## How do I use it?
 
-Clone this repo: `git clone https://github.com/Edforma/Edformer.git`.
-
-Run `yarn install` to download all of the required dependencies.
-
-Modify `config.json` to your needs.
-
-Finally, run `node index.js`. If you are running Edformer in this directory for the first time, two directorys will be made: `data` for database storage, and `logs` for log files.
-
-
+```bash
+git clone https://github.com/Edforma/Edformer.git
+yarn install
+PORT=3000 node .
+```
 ## Troubleshooting/Questions
 
-### How do I make Edformer accessible from outside networks?
-Try [ngrok.](https://ngrok.com/)
-
+### I can't access Edformer at all! What's the deal, man?
+Make sure you're setting the PORT environment variable!
 ## Credits
 
-- Winston
-- Express
-- Cheerio
-- XPath
-- Axios
-- Sentry
+- Node.JS
+    - cheerio, for parsing student information pages
+    - express, for serving the API
+    - winston, for logging
+    - sentry, for debugging
+    - pm2, for deployment
+    - axios, for networking
+    - pouchdb, for database storage
+- Conroe Independent School District
+    - the student access center, for being the crux of this project <3

@@ -425,10 +425,19 @@ const getAbsences = async (token, res) => {
     }
 
     let $ = cheerioLoad(page.data)
-
+    let absences = []
     $('body > center > center > table tr[align]').each(function () {
-        
+        absences.push({
+            date: formatDate($(this).find('td:nth-child(1)').text()),
+            day: $(this).find('td:nth-child(2)').text(),
+        })
     })
+
+    const responseData = {
+        status: "success",
+        absences
+    }
+    res.send(responseData);
 }
 
 /**
@@ -465,8 +474,6 @@ const getReferrals = async (token, res) => {
             code: parseInt($(this).find('td:nth-child(7)').text()),
             consequences: $(this).find('td:nth-child(8)').text(), // TODO: Objectify this so Edforma can process it neatly. Also, students can get more than one consequence.
             adminComments: $(this).find('td:nth-child(9)').text(),
-
-            
         })
     })
 
@@ -501,5 +508,6 @@ export { getStudentData };
 export { getGrades };
 export { getSchedule };
 export { getProgReports };
+export { getAbsences }
 export { getReferrals }
 export { logout };

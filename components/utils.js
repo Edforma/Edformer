@@ -29,10 +29,7 @@ const _authCookie = async (accessToken) => {
  */
 function formatDate(dateString) {
     const [month, day, year] = dateString.split('/');
-
-    const formattedDate = new Date(`${month}/${day}/${year}`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  
-    return formattedDate;
+    return new Date(`${month}/${day}/${year}`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
 /**
@@ -430,6 +427,7 @@ const getAbsences = async (token, res) => {
         absences.push({
             date: formatDate($(this).find('td:nth-child(1)').text()),
             day: $(this).find('td:nth-child(2)').text(),
+            // TODO: put the period absences in here
         })
     })
 

@@ -149,8 +149,8 @@ const getStudentData = async (token, res) => {
 const getGrades = async (token, res) => {
 
     let gradeParams = new URLSearchParams({
-        // ScheduleMP: req.headers.mp ? req.headers.mp : null
-        sortit: 1 // Request sort by due date Gives us a nice big list
+        ScheduleMP: "4",
+        sortit: "1" // Request sort by due date Gives us a nice big list
     })
 
     let page = await axios.post('https://pac.conroeisd.net/assignments.asp', gradeParams.toString(), {
@@ -186,11 +186,8 @@ const getGrades = async (token, res) => {
     
     let $ = cheerioLoad(page.data)
 
-    // Create an empty array to hold the course objects
     let courses = [];
-
-    // Loop through each row in the table (skip the first two rows)
-    $('body > center > table tr').each(function(index) {
+    $('table:contains(Class Averages) tr').each(function(index) {
     if (index > 1) {
         // Extract the data from the row
         let period = $(this).find('td:eq(0)').text().trim();
@@ -213,12 +210,9 @@ const getGrades = async (token, res) => {
     }
     });
 
-    // Create an empty array to hold the course objects
     let assignments = [];
-
-    // Loop through each row in the table (skip the first two rows)
-    $('body > center > center > center > table > tbody > tr:nth-child(2) > td > table tr').each(function(index) {
-    if (index >= 1) {
+    $('table:contains(Description) tr').each(function(index) {
+    if (index >= 3) {
         // Extract the data from the row
         let dueDate = $(this).find('td:eq(0)').text().trim();
         let assignedDate = $(this).find('td:eq(1)').text().trim();
@@ -241,10 +235,13 @@ const getGrades = async (token, res) => {
     }
     });
 
+    // console.log(assignments)
+
     // Print the array of course objects to the console
     // console.log(assignments);
 
     for (let assignment of assignments) {
+        console.log(assignment)
         let courseRef = courses.find(course => course.course === assignment.courseId)
         if (courseRef.assignments) {
             courseRef.assignments.push(assignment)

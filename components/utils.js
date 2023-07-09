@@ -9,8 +9,6 @@ import { randomUUID } from "crypto";
 import winston from 'winston'
 import { wrapper } from 'axios-cookiejar-support';
 const db = new PouchDB('data')
-import url from "url";
-
 
 /**
  * Obtains the raw cookie data that belongs to an access token.
@@ -42,7 +40,6 @@ function formatDate(dateString) {
 const login = async (usr, psw, res) => {
     let csrfToken = ''
     let login_url = ''
-    let bearer = ''
     let SAMLRes = ''
 
     let masqueradeConfig = {
@@ -100,28 +97,37 @@ const login = async (usr, psw, res) => {
             Resolution: masqueradeConfig.resolution
         }
     }).catch((error) => {
-        winston.error(`Got error ${error.response.status} ${error.response.statusText} while fetching login uri!`)
-        if (typeof fetchLoginUrlResponse.data === 'object' && fetchLoginUrlResponse.data.ResultCode != 1) {
-            winston.error(`Classlink rejected authentication attempt:`)
-            winston.error(error.response.data.ResultDescription)
-            res.status(400).send({
-                status: "failed",
-                error: error.response.data.ResultDescription
-            });
-            return;
-        }
+        winston.error(`Got error ${error.response.status} ${error.response.statusText} while fetching login url!`)
+        res.status(error.response.status).send({
+            status: "failed",
+            error: `Got ${error.response.status} ${error.response.statusText} when fetching login url.`
+        })
+        return;
     })
+    if (fetchLoginUrlResponse.data.ResultCode !== 1) {
+        winston.error(`Classlink rejected authentication attempt:`)
+        winston.error(fetchLoginUrlResponse.data.ResultDescription)
+        res.status(400).send({
+            status: "failed",
+            error: fetchLoginUrlResponse.data.ResultDescription
+        });
+        return;
+    }
 
     login_url = fetchLoginUrlResponse.data.login_url
     winston.info(`Got login_url: ${login_url}`)
 
-    let primeSessionResponse = await axiosCJ.request({
+    // Get the value of the "client_id" parameter from the login_url.
+    let client_id = new URL(login_url).searchParams.get('client_id')
+    winston.info(`Got client_id: ${client_id}`)
+    // Fully opens a session with Classlink.
+    await axiosCJ.request({
         method: 'GET',
         url: 'https://launchpad.classlink.com/oauth2/v2/auth',
         params: {
             scope: 'full',
             redirect_uri: 'https://myapps.classlink.com/oauth/',
-            client_id: 'c1587556210325442f066178b254bbc92cdc0e3e35a9c2',
+            client_id: client_id,
             response_type: 'code'
         },
         headers: {
@@ -145,59 +151,8 @@ const login = async (usr, psw, res) => {
             status: "failed",
             error: error.response.data
         });
+        return;
     })
-
-    let code = url.parse(primeSessionResponse.request.res.responseUrl, true).query.code
-    winston.info(`Got oauth code: ${code}`)
-
-    let provisionResponse = await axiosCJ.request({
-        method: 'GET',
-        url: 'https://applications.apis.classlink.com/exchangeCode',
-        params: { code, response_type: 'code' },
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0',
-            Accept: 'application/json, text/plain, */*',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Content-Type': 'application/json',
-            Origin: 'https://myapps.classlink.com',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-site',
-            Connection: 'keep-alive'
-        }
-    }).catch((error) => {
-        winston.error(`Got error ${error.response.status} ${error.response.statusText} while fetching session bearer:`)
-        console.dir(error.response.data)
-    })
-
-    bearer = provisionResponse.data.token
-    winston.info(`Bearer token is ${bearer}`)
-
-    let sessionStarterResponse = await axiosCJ.request({
-        method: 'POST',
-        url: 'https://applications.apis.classlink.com/v1/startSession',
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0',
-            Accept: 'application/json, text/plain, */*',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Content-Type': 'text/html',
-            Origin: 'https://myapps.classlink.com',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-site',
-            Connection: 'keep-alive',
-            Authorization: `Bearer ${bearer}`
-        },
-        data: '{}'
-    }).catch((error) => {
-        winston.error(`Got error ${error.response.status} ${error.response.statusText} while fetching starting session:`)
-        console.dir(error.response.data)
-    })
-
-    if (sessionStarterResponse.data.includes('Session Started')) {
-    }
 
     let fetchSAMLResResponse = await axiosCJ.request({
         method: 'GET',
@@ -205,6 +160,11 @@ const login = async (usr, psw, res) => {
     }).catch((error) => {
         winston.error(`Got error ${error.response.status} ${error.response.statusText} while fetching SAMLResponse:`)
         console.dir(error.response.data)
+        res.status(400).send({
+            status: "failed",
+            error: 'Error while fetching SAML response data.'
+        });
+        return;
     })
 
     let $samlres = cheerioLoad(fetchSAMLResResponse.data)
@@ -235,6 +195,11 @@ const login = async (usr, psw, res) => {
     }).catch((error) => {
         winston.error(`Got error ${error.response.status} ${error.response.statusText} while calling StuConsume:`)
         console.dir(error.response.data)
+        res.status(400).send({
+            status: "failed",
+            error: 'Error while calling StuConsume.'
+        });
+        return;
     })
 
     winston.info(`${stuConsumeResponse.status} ${stuConsumeResponse.statusText} in StuConsume, trying to make session...`);
@@ -272,6 +237,11 @@ const login = async (usr, psw, res) => {
     }).catch((error) => {
         error(`Got error ${error.response.status} ${error.response.statusText} while calling Consume:`)
         console.dir(error.response.data)
+        res.status(400).send({
+            status: "failed",
+            error: 'Error while calling Consume.'
+        });
+        return;
     })
 
     if (consumeResponse.data.includes('This page uses frames, but your browser doesn\'t support them.')) {
@@ -281,7 +251,12 @@ const login = async (usr, psw, res) => {
             "_id": "session-" + accessToken,
             cookieData: { name: cookieInfo.key, token: cookieInfo.value }
         }).catch((e) => {
-            return winston.error(`${usr} - Failed to put session doc. ${e}`)
+            winston.error(`${usr} - Failed to put session doc. ${e}`)
+            res.status(400).send({
+                status: "failed",
+                error: 'Failed to register session in database.'
+            });
+            return;
         })
         res.send({ status: "success", accessToken: accessToken });
     } else {

@@ -263,6 +263,11 @@ const login = async (usr, psw, res) => {
         winston.error('Expected redirect to loader page but got this:')
         winston.info(consumeResponse.data)
         winston.error('The SAMLResponse may be invalid.')
+        res.status(400).send({
+            status: "failed",
+            error: 'Unexpected response from Conroe ISD.'
+        })
+        return;
     }
 }
 

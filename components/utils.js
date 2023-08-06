@@ -11,37 +11,21 @@ import { wrapper } from 'axios-cookiejar-support';
 const db = new PouchDB('data')
 
 /**
- * Obtains the raw cookie data that belongs to an access token.
- * @param {string} token A valid Edformer access token.
- * @returns {string} The ASPSESSION cookie string.
- */
-const _authCookie = async (accessToken) => {
-    // Obtain the session token's document.
-    let authDoc = await db.get("session-" + accessToken);
-    // Return the cookie data stored inside the document.
-    return authDoc.cookieData.name + '=' + authDoc.cookieData.token;
-}
-
-/**
  * Convert a mm/dd/yyyy date to a human readable "Month Day, Year" format.
  * @param {string} date A date in the mm/dd/yyyy format.
  * @returns {string} A human-readable timestamp in the "Month Day, Year" format.
  */
-function formatDate(dateString) {
-    const [month, day, year] = dateString.split('/');
-    return new Date(`${month}/${day}/${year}`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-}
+// function formatDate(dateString) {
+//     const [month, day, year] = dateString.split('/');
+//     return new Date(`${month}/${day}/${year}`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+// }
 
 /**
  * Authenticate a student with the Conroe ISD servers. 
  * @param {string} usr Username of an Student Access Center account.
  * @param {string} psw Password of an Student Access Center account.
  */
-const login = async (usr, psw, res) => {
-    let csrfToken = ''
-    let login_url = ''
-    let SAMLRes = ''
-
+const handleAuth = async (SAMLRes, res) => {
     let masqueradeConfig = {
         // Masquerade as a mobile device (iPhone SE 2nd Generation).
         // The os, browser and resolution are only sent on the first request to Classlink to define the login device for the session.
@@ -53,124 +37,11 @@ const login = async (usr, psw, res) => {
         // Using the user agent from a physical device is recommended.
         userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
     }
+    
+    winston.info(`Handling SAMLResponse with length of ${SAMLRes.length}`)
 
-    const jar = new CookieJar()
-    let axiosCJ = wrapper(axios.create({ jar }))
-    axiosCJ.defaults.headers.common['User-Agent'] = masqueradeConfig.userAgent;
-
-    // Adds some cookies to the jar, and sets the csrfToken variable.
-    await axiosCJ.request({
-        method: 'GET',
-        url: 'https://launchpad.classlink.com/conroeisd',
-    }).then((response) => {
-        let $ = cheerioLoad(response.data)
-        // The token is in a script tag that defines the object IdConfig, which csrfToken is a property of.
-        let script = $('script:contains("IdConfig")').html()
-        csrfToken = JSON.parse(script.split('var IdConfig = ')[1].replace(';', '')).csrfToken // Ugh.
-
-        winston.info(`clsession is ${jar.store.idx['classlink.com']['/']['clsession'].value}`)
-        winston.info(`_csrf is ${jar.store.idx['launchpad.classlink.com']['/']['_csrf'].value}`)
-        winston.info(`baseurl is ${jar.store.idx['launchpad.classlink.com']['/']['baseurl'].value}`)
-        winston.info('Trying to get csrfToken from webpage...')
-        winston.info(`csrfToken is ${csrfToken}`)
-    })
-
-    // Grab our login_url from the Classlink API.
-    let fetchLoginUrlResponse = await axiosCJ.request({
-        method: 'POST',
-        url: 'https://launchpad.classlink.com/login',
-        headers: {
-            Accept: '*/*',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'csrf-token': csrfToken,
-            Connection: 'keep-alive'
-        },
-        data: {
-            username: usr,
-            password: psw,
-            os: masqueradeConfig.os,
-            userdn: '', // I'm unsure what this is. User Display Name?
-            code: 'conroeisd',
-            Browser: masqueradeConfig.browser,
-            Resolution: masqueradeConfig.resolution
-        }
-    }).catch((error) => {
-        winston.error(`Got error ${error.response.status} ${error.response.statusText} while fetching login url!`)
-        res.status(error.response.status).send({
-            status: "failed",
-            error: `Got ${error.response.status} ${error.response.statusText} when fetching login url.`
-        })
-        return;
-    })
-    if (fetchLoginUrlResponse.data.ResultCode !== 1) {
-        winston.error(`Classlink rejected authentication attempt:`)
-        winston.error(fetchLoginUrlResponse.data.ResultDescription)
-        res.status(400).send({
-            status: "failed",
-            error: fetchLoginUrlResponse.data.ResultDescription
-        });
-        return;
-    }
-
-    login_url = fetchLoginUrlResponse.data.login_url
-    winston.info(`Got login_url: ${login_url}`)
-
-    // Get the value of the "client_id" parameter from the login_url.
-    let client_id = new URL(login_url).searchParams.get('client_id')
-    winston.info(`Got client_id: ${client_id}`)
-    // Fully opens a session with Classlink.
-    await axiosCJ.request({
-        method: 'GET',
-        url: 'https://launchpad.classlink.com/oauth2/v2/auth',
-        params: {
-            scope: 'full',
-            redirect_uri: 'https://myapps.classlink.com/oauth/',
-            client_id: client_id,
-            response_type: 'code'
-        },
-        headers: {
-            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            Referer: 'https://launchpad.classlink.com/conroeisd?loggedout=1',
-            'Alt-Used': 'launchpad.classlink.com',
-            Connection: 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'same-origin',
-            'Sec-Fetch-User': '?1',
-            TE: 'trailers'
-        }
-    }).catch((error) => {
-        winston.error(`Got error ${error.response.status} ${error.response.statusText} while priming session:`)
-        console.dir(error.response.data)
-        res.status(400).send({
-            status: "failed",
-            error: error.response.data
-        });
-        return;
-    })
-
-    let fetchSAMLResResponse = await axiosCJ.request({
-        method: 'GET',
-        url: 'https://idp.classlink.com/sso/select/NGlYeHJNV3RhSUk9'
-    }).catch((error) => {
-        winston.error(`Got error ${error.response.status} ${error.response.statusText} while fetching SAMLResponse:`)
-        console.dir(error.response.data)
-        res.status(400).send({
-            status: "failed",
-            error: 'Error while fetching SAML response data.'
-        });
-        return;
-    })
-
-    let $samlres = cheerioLoad(fetchSAMLResResponse.data)
-
-    SAMLRes = $samlres('input[name="SAMLResponse"]').val()
-    winston.info(`Got SAMLResponse with length of ${SAMLRes.length}`)
+    const jar = new CookieJar();
+    const axiosCJ = wrapper(axios.create({ jar }));
 
     let stuConsumeResponse = await axiosCJ.request({
         method: 'POST',
@@ -245,20 +116,8 @@ const login = async (usr, psw, res) => {
     })
 
     if (consumeResponse.data.includes('This page uses frames, but your browser doesn\'t support them.')) {
-        let cookieInfo = jar.toJSON().cookies[5]
-        let accessToken = randomUUID()
-        db.put({
-            "_id": "session-" + accessToken,
-            cookieData: { name: cookieInfo.key, token: cookieInfo.value }
-        }).catch((e) => {
-            winston.error(`${usr} - Failed to put session doc. ${e}`)
-            res.status(400).send({
-                status: "failed",
-                error: 'Failed to register session in database.'
-            });
-            return;
-        })
-        res.send({ status: "success", accessToken: accessToken });
+        let cookieInfo = jar.toJSON()
+        res.send({ status: "success", cookie: cookieInfo.cookies[1] });
     } else {
         winston.error('Expected redirect to loader page but got this:')
         winston.info(consumeResponse.data)
@@ -694,11 +553,4 @@ const logout = async (token, res) => {
 
 }
 
-export { login };
-export { getStudentData };
-export { getGrades };
-export { getSchedule };
-export { getProgReports };
-export { getAbsences }
-export { getReferrals }
-export { logout };
+export { handleAuth };

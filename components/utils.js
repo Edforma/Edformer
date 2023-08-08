@@ -11,19 +11,8 @@ import { wrapper } from 'axios-cookiejar-support';
 const db = new PouchDB('data')
 
 /**
- * Convert a mm/dd/yyyy date to a human readable "Month Day, Year" format.
- * @param {string} date A date in the mm/dd/yyyy format.
- * @returns {string} A human-readable timestamp in the "Month Day, Year" format.
- */
-// function formatDate(dateString) {
-//     const [month, day, year] = dateString.split('/');
-//     return new Date(`${month}/${day}/${year}`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-// }
-
-/**
  * Authenticate a student with the Conroe ISD servers. 
- * @param {string} usr Username of an Student Access Center account.
- * @param {string} psw Password of an Student Access Center account.
+ * @param {string} SAMLRes The value of Classlink's SAMLResponse.
  */
 const handleAuth = async (SAMLRes, res) => {
     let masqueradeConfig = {
